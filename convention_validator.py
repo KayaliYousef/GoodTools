@@ -286,6 +286,11 @@ before_square_brackets_valid = validate_before_square_brackets(text)
 before_curly_brackets_valid = validate_before_curly_brackets(text)
 inside_square_brackets = validate_inside_square_brackets(text)
 
-if brackets_count_valid and dot_space_after_bracket_valid and before_square_brackets_valid and before_curly_brackets_valid and no_missing_round_brackets and no_missing_square_brackets and no_missing_curly_brackets and inside_square_brackets:
-    print("___SRT is VALID___")
-else: print("___SRT is NOT Valid___")
+def check_fo_validation():
+    if brackets_count_valid and dot_space_after_bracket_valid and before_square_brackets_valid and before_curly_brackets_valid and no_missing_round_brackets and no_missing_square_brackets and no_missing_curly_brackets and inside_square_brackets:
+        print("___SRT is VALID___")
+        return True
+
+    else: 
+        print("___SRT is NOT Valid___")
+        return False
