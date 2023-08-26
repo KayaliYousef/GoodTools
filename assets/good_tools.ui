@@ -29,7 +29,7 @@ background-color:white;
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="Compare">
      <attribute name="title">
@@ -565,6 +565,86 @@ QPushButton:pressed {
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Validator</string>
+     </attribute>
+     <widget class="QPushButton" name="validatePushButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>80</y>
+        <width>295</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI Light</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+      </property>
+      <property name="text">
+       <string>Validate</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="convertInfoLabel_4">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>291</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI Light</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="text">
+       <string>Put all .srt files in the same folder with this program and press the Validate button.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="validateFeedbackTextEdit">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>130</y>
+        <width>295</width>
+        <height>70</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -573,7 +653,7 @@ QPushButton:pressed {
      <x>0</x>
      <y>0</y>
      <width>335</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

@@ -7,6 +7,7 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QTextEdit, QRadioButton, QFileDialog
 from PyQt5.QtGui import QIcon
 
+import convention_validator as cv
 import sort
 import srt_vtt_converter
 
@@ -14,12 +15,13 @@ class UI(QMainWindow):
   # constructor
     def __init__(self):
         super(UI, self).__init__()
-        uic.loadUi('assets/text_compare.ui', self)
+        uic.loadUi('assets/good_tools.ui', self)
 
         self.setWindowIcon(QIcon('assets/palmtree.png'))
-        self.setWindowTitle("Compare/Sort/Convert")
+        self.setWindowTitle("GoodTools")
 
         # Define Widgets
+        # Labels
         # Radio Buttons
         self.srtRadioButton = self.findChild(QRadioButton, "srtRadioButton")
         self.txtRadioButton = self.findChild(QRadioButton, "txtRadioButton")
@@ -29,17 +31,20 @@ class UI(QMainWindow):
         self.sortPushButton = self. findChild(QPushButton, "sortPushButton")
         self.convertPushButton = self.findChild(QPushButton, "convertPushButton")
         self.cleanPushButton =self.findChild(QPushButton, "cleanPushButton")
+        self.validatePushButton = self.findChild(QPushButton, "validatePushButton")
         self.fileDialog1 =self.findChild(QPushButton, "fileDialog1")    
         self.fileDialog2 =self.findChild(QPushButton, "fileDialog2")
         # Entries
         self.firstFileName = self.findChild(QTextEdit, "firstFile")
         self.secondFileName = self.findChild(QTextEdit, "secondFile")
+        self.validateFeedbackTextEdit = self.findChild(QTextEdit, "validateFeedbackTextEdit")
 
         # Connect Buttons
         self.comparePushButton.clicked.connect(self.compare)
         self.sortPushButton.clicked.connect(self.sort_srt)
         self.convertPushButton.clicked.connect(self.convert)
         self.cleanPushButton.clicked.connect(self.clean)
+        self.validatePushButton.clicked.connect(self.validate_srt)
         self.fileDialog1.clicked.connect(self.browse1)
         self.fileDialog2.clicked.connect(self.browse2)
 
@@ -165,7 +170,37 @@ class UI(QMainWindow):
         with open(path, "r", encoding="utf-8") as csv_file:
             lines = csv_file.readlines()
             return lines
+        
+    def validate_srt(self) -> str:
+        srt_files = self.get_files("srt")
+        unvalid_files = []
+        for file in srt_files:
+            text = cv.clean_srt(file)
 
+            brackets_count_valid = cv.validate_brackets_count(text)
+            no_missing_round_brackets = cv.find_missing_round_brackets(text)
+            no_missing_square_brackets = cv.find_missing_square_brackets(text)
+            no_missing_curly_brackets = cv.find_missing_curly_brackets(text)
+            dot_space_after_bracket_valid = cv.validate_dot_space_after_round_bracket(text)
+            before_square_brackets_valid = cv.validate_before_square_brackets(text)
+            before_curly_brackets_valid = cv.validate_before_curly_brackets(text)
+            inside_square_brackets = cv.validate_inside_square_brackets(text)
+
+            if brackets_count_valid and dot_space_after_bracket_valid and before_square_brackets_valid and before_curly_brackets_valid and no_missing_round_brackets and no_missing_square_brackets and no_missing_curly_brackets and inside_square_brackets:
+                pass
+
+            else: 
+                unvalid_files.append(file)
+
+        if not unvalid_files:
+            self.validateFeedbackTextEdit.setHtml("<font color='green'>All Files are Valid</font>")
+        else:
+            self.validateFeedbackTextEdit.setHtml("<font color='red'>Following files are not Valid</font>")
+            for file in unvalid_files:
+                temp_text = self.validateFeedbackTextEdit.toHtml()
+                temp_text = f"{temp_text}{file}"
+                self.validateFeedbackTextEdit.setHtml(temp_text)
+                
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

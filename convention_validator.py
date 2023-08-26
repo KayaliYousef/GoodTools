@@ -275,22 +275,23 @@ def clean_srt(srt_file_path:str) -> str:
     cleaned_lines = [line for line in cleaned_lines if line.strip()]
     return '\n'.join(cleaned_lines)
 
-text = clean_srt("test.srt")
+if __name__ == "__main__":
+    text = clean_srt("test.srt")
 
-brackets_count_valid = validate_brackets_count(text)
-no_missing_round_brackets = find_missing_round_brackets(text)
-no_missing_square_brackets = find_missing_square_brackets(text)
-no_missing_curly_brackets = find_missing_curly_brackets(text)
-dot_space_after_bracket_valid = validate_dot_space_after_round_bracket(text)
-before_square_brackets_valid = validate_before_square_brackets(text)
-before_curly_brackets_valid = validate_before_curly_brackets(text)
-inside_square_brackets = validate_inside_square_brackets(text)
+    brackets_count_valid = validate_brackets_count(text)
+    no_missing_round_brackets = find_missing_round_brackets(text)
+    no_missing_square_brackets = find_missing_square_brackets(text)
+    no_missing_curly_brackets = find_missing_curly_brackets(text)
+    dot_space_after_bracket_valid = validate_dot_space_after_round_bracket(text)
+    before_square_brackets_valid = validate_before_square_brackets(text)
+    before_curly_brackets_valid = validate_before_curly_brackets(text)
+    inside_square_brackets = validate_inside_square_brackets(text)
 
-def check_fo_validation():
-    if brackets_count_valid and dot_space_after_bracket_valid and before_square_brackets_valid and before_curly_brackets_valid and no_missing_round_brackets and no_missing_square_brackets and no_missing_curly_brackets and inside_square_brackets:
-        print("___SRT is VALID___")
-        return True
+    def check_fo_validation():
+        if brackets_count_valid and dot_space_after_bracket_valid and before_square_brackets_valid and before_curly_brackets_valid and no_missing_round_brackets and no_missing_square_brackets and no_missing_curly_brackets and inside_square_brackets:
+            print("___SRT is VALID___")
+            return True
 
-    else: 
-        print("___SRT is NOT Valid___")
-        return False
+        else: 
+            print("___SRT is NOT Valid___")
+            return False
