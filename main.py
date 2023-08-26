@@ -170,9 +170,13 @@ class UI(QMainWindow):
         with open(path, "r", encoding="utf-8") as csv_file:
             lines = csv_file.readlines()
             return lines
-        
+   
     def validate_srt(self) -> str:
         srt_files = self.get_files("srt")
+        if not len(srt_files):
+            self.validateFeedbackTextEdit.setPlainText("No Files Found")
+            return
+
         unvalid_files = []
         for file in srt_files:
             text = cv.clean_srt(file)
