@@ -11,6 +11,8 @@ import convention_validator as cv
 import sort
 import srt_vtt_converter
 
+VERSION = "1.1.0"
+
 class UI(QMainWindow):
   # constructor
     def __init__(self):
@@ -18,7 +20,7 @@ class UI(QMainWindow):
         uic.loadUi('assets/good_tools.ui', self)
 
         self.setWindowIcon(QIcon('assets/palmtree.png'))
-        self.setWindowTitle("GoodTools")
+        self.setWindowTitle(f"GoodTools {VERSION}")
 
         # Define Widgets
         # Labels
