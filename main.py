@@ -11,7 +11,7 @@ import convention_validator as cv
 import sort
 import srt_vtt_converter
 
-VERSION = "1.1.0"
+VERSION = "1.3.0"
 
 class UI(QMainWindow):
   # constructor
@@ -254,13 +254,14 @@ class UI(QMainWindow):
             with open(file, "r") as srt_file:
                 #? Read the contents of the file
                 srt_contents = srt_file.read()
+            with open(file, "r") as srt_file:
                 srt_contents_lines = srt_file.readlines()
             #? find the timecodes
             pattern = r"\d+.*\d+.*\d+.*\d+.*\d+.*\d+.*\d+.*\d+"
             srt_timecodes = re.findall(pattern, srt_contents)
             #? Find errors in timecodes
             for line in srt_timecodes:
-                if len(line) != 29:
+                if len(line.strip()) != 29:
                     block_format_error[f"{file}"].append(line)
                     continue
                 try:
@@ -268,20 +269,26 @@ class UI(QMainWindow):
                     if start > end:
                         error_within_one_block[f"{file}"].append(line)
                 except:
+                    print(line)
                     block_format_error[f"{file}"].append(line)
 
             for i in range(len(srt_timecodes) - 1):
                 try:
                     _, current_block_end = self.convert_timecode_to_milisec(srt_timecodes[i])
-                    next_block_start, _ = self.convert_timecode_to_milisec(srt_timecodes[i + 1])
-                    if current_block_end > next_block_start:
-                        error_between_two_blocks[f"{file}"].append(srt_timecodes[i].strip())
-                        error_between_two_blocks[f"{file}"].append(srt_timecodes[i + 1].strip())
                 except:
                     if not srt_timecodes[i] in block_format_error[f"{file}"]:
                         block_format_error[f"{file}"].append(srt_timecodes[i])
+                    continue
+                try:
+                    next_block_start, _ = self.convert_timecode_to_milisec(srt_timecodes[i + 1])
+                except:
                     if not srt_timecodes[i + 1] in block_format_error[f"{file}"]:
                         block_format_error[f"{file}"].append(srt_timecodes[i + 1])
+                    continue
+                if current_block_end > next_block_start:
+                    error_between_two_blocks[f"{file}"].append(srt_timecodes[i].strip())
+                    error_between_two_blocks[f"{file}"].append(srt_timecodes[i + 1].strip())
+                    
             
             #! Find errors in Block indexes
             for i, line in enumerate(srt_contents_lines):
@@ -297,6 +304,8 @@ class UI(QMainWindow):
                     continue
                 if srt_contents_lines[i-1] != "\n":
                     empty_row_errors[f"{file}"].append(f"Missing empty row at line {i}")
+                if srt_contents_lines[i-2] == "\n":
+                    empty_row_errors[f"{file}"].append(f"Extra row at line {i}")
 
         #? count will be greater that 0 if there were error in the srt files
         count = 0
