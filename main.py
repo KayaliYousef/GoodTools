@@ -237,6 +237,7 @@ class UI(QMainWindow):
         error_between_two_blocks = {}
         block_index_errors = {}
         empty_row_errors = {}
+        block_format_error = {}
         
         #? Open the SRT files
         for file in srt_files:
@@ -244,29 +245,44 @@ class UI(QMainWindow):
             error_between_two_blocks.update({f"{file}":[]})
             block_index_errors.update({f"{file}":[]})
             empty_row_errors.update({f"{file}":[]})
+            block_format_error.update({f"{file}":[]})
             block_index = 0
             block_index_indexes = []
 
             with open(file, "r") as srt_file:
                 #? Read the contents of the file
-                srt_contents = srt_file.readlines()
-            #? Clean the srt
-            srt_timecodes = [line for line in srt_contents if "-->" in line]
+                srt_contents = srt_file.read()
+                srt_contents_lines = srt_file.readlines()
+            #? find the timecodes
+            pattern = r"\d+.*\d+.*\d+.*\d+.*\d+.*\d+.*\d+.*\d+"
+            srt_timecodes = re.findall(pattern, srt_contents)
             #? Find errors in timecodes
             for line in srt_timecodes:
-                start, end = self.convert_timecode_to_milisec(line)
-                if start > end:
-                    error_within_one_block[f"{file}"].append(line)
-            
+                if len(line) != 29:
+                    block_format_error[f"{file}"].append(line)
+                    continue
+                try:
+                    start, end = self.convert_timecode_to_milisec(line)
+                    if start > end:
+                        error_within_one_block[f"{file}"].append(line)
+                except:
+                    block_format_error[f"{file}"].append(line)
+
             for i in range(len(srt_timecodes) - 1):
-                _, current_block_end = self.convert_timecode_to_milisec(srt_timecodes[i])
-                next_block_start, _ = self.convert_timecode_to_milisec(srt_timecodes[i + 1])
-                if current_block_end > next_block_start:
-                    error_between_two_blocks[f"{file}"].append(srt_timecodes[i].strip())
-                    error_between_two_blocks[f"{file}"].append(srt_timecodes[i + 1].strip())
+                try:
+                    _, current_block_end = self.convert_timecode_to_milisec(srt_timecodes[i])
+                    next_block_start, _ = self.convert_timecode_to_milisec(srt_timecodes[i + 1])
+                    if current_block_end > next_block_start:
+                        error_between_two_blocks[f"{file}"].append(srt_timecodes[i].strip())
+                        error_between_two_blocks[f"{file}"].append(srt_timecodes[i + 1].strip())
+                except:
+                    if not srt_timecodes[i] in block_format_error[f"{file}"]:
+                        block_format_error[f"{file}"].append(srt_timecodes[i])
+                    if not srt_timecodes[i + 1] in block_format_error[f"{file}"]:
+                        block_format_error[f"{file}"].append(srt_timecodes[i + 1])
             
             #! Find errors in Block indexes
-            for i, line in enumerate(srt_contents):
+            for i, line in enumerate(srt_contents_lines):
                 if line.strip().isdigit():
                     block_index_indexes.append(i)
                     block_index += 1
@@ -277,14 +293,13 @@ class UI(QMainWindow):
             for i in block_index_indexes:
                 if i == 0:
                     continue
-                if srt_contents[i-1] != "\n":
+                if srt_contents_lines[i-1] != "\n":
                     empty_row_errors[f"{file}"].append(f"Missing empty row at line {i}")
-
 
         #? count will be greater that 0 if there were error in the srt files
         count = 0
-        for val1, val2, val3, val4 in zip(error_within_one_block.values(), error_between_two_blocks.values(), block_index_errors.values(), empty_row_errors.values()):
-            if val1 or val2 or val3 or val4: count += 1  
+        for val1, val2, val3, val4, val5 in zip(error_within_one_block.values(), error_between_two_blocks.values(), block_index_errors.values(), empty_row_errors.values(), block_format_error.values()):
+            if val1 or val2 or val3 or val4 or val5: count += 1  
 
         #* No errors were found  
         if count == 0:
@@ -292,10 +307,10 @@ class UI(QMainWindow):
 
         #! Errors were found 
         else:
-            self.checkSequenceFeedbackTextEdit.setHtml("<font color='#116b01'>Color Codes:</font><br><font color='#6b0101'>File name; </font><font color='#ff8000'>Timecode error within the same block; </font><font color='#014d6b'>Timecode error between two blocks; </font><font color='#039169'>Block index error; </font><font color='#6b4401'>Empty row error.</font>")
-
+            self.checkSequenceFeedbackTextEdit.setHtml("<font color='#116b01'>Color Codes:</font><br><font color='#6b0101'>File name; </font><font color='#ff8000'>Timing error within the same block; </font><font color='#014d6b'>Timing error between two blocks; </font><font color='#039169'>Block index error; </font><font color='#6b4401'>Empty row error; </font><font color='#690391'>Timecode format error.</font>")
+            
             for file in srt_files:
-                if error_within_one_block[f"{file}"] or error_between_two_blocks[f"{file}"] or block_index_errors[f"{file}"] or empty_row_errors[f"{file}"]:
+                if error_within_one_block[f"{file}"] or error_between_two_blocks[f"{file}"] or block_index_errors[f"{file}"] or empty_row_errors[f"{file}"] or block_format_error[f"{file}"]:
                     temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
                     temp_text = f"{temp_text}<br><font color='#6b0101'><u>{file}</u></font>"
                     self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
@@ -317,11 +332,17 @@ class UI(QMainWindow):
                         temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#039169'>Block Index {error} is wrong or missing</font>"
                         self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
-                #* Missing empty rows
+                # * Missing empty rows
                 if empty_row_errors[f"{file}"]:
                     for error in empty_row_errors[f"{file}"]:
                         temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#6b4401'>{error}</font>"
+                        self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                #* Errors in timecode format
+                if block_format_error[f"{file}"]:
+                    for error in block_format_error[f"{file}"]:
+                        temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                        temp_text = f"{temp_text}<font color='#690391'>{error}</font>"
                         self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
 
 if __name__ == '__main__':
