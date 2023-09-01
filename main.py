@@ -318,7 +318,7 @@ class UI(QMainWindow):
 
         #! Errors were found 
         else:
-            self.checkSequenceFeedbackTextEdit.setHtml("<font color='#116b01'>Color Codes:</font><br><font color='#6b0101'>File name; </font><font color='#ff8000'>Timing error within the same block; </font><font color='#014d6b'>Timing error between two blocks; </font><font color='#039169'>Block index error; </font><font color='#6b4401'>Empty row error; </font><font color='#690391'>Timecode format error.</font>")
+            self.checkSequenceFeedbackTextEdit.setHtml("<font color='#116b01'>Color Codes:</font><br><font color='#6b0101'>File name; </font><font color='#ff8000'>Timing error within the same block; </font><font color='#014d6b'>Timing error between two blocks; </font><font color='#039169'>Block index error; </font><font color='#6b4401'>Empty/Extra row error; </font><font color='#690391'>Timecode format error.</font>")
             
             for file in srt_files:
                 if error_within_one_block[f"{file}"] or error_between_two_blocks[f"{file}"] or block_index_errors[f"{file}"] or empty_row_errors[f"{file}"] or block_format_error[f"{file}"]:
