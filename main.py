@@ -269,7 +269,6 @@ class UI(QMainWindow):
                     if start > end:
                         error_within_one_block[f"{file}"].append(line)
                 except:
-                    print(line)
                     block_format_error[f"{file}"].append(line)
 
             for i in range(len(srt_timecodes) - 1):
@@ -306,6 +305,10 @@ class UI(QMainWindow):
                     empty_row_errors[f"{file}"].append(f"Missing empty row at line {i}")
                 if srt_contents_lines[i-2] == "\n":
                     empty_row_errors[f"{file}"].append(f"Extra row at line {i}")
+                if srt_contents_lines[i+1] == "\n":
+                    empty_row_errors[f"{file}"].append(f"Extra row at line {i+2}")
+                if srt_contents_lines[i+2] == "\n":
+                    empty_row_errors[f"{file}"].append(f"Extra row at line {i+3}")
 
         #? count will be greater that 0 if there were error in the srt files
         count = 0
