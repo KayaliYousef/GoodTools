@@ -61,7 +61,7 @@ class UI(QMainWindow):
         fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt) (*.srt)")
         self.secondFileName.setText(fname[0])
 
-    """Help Fuctinos"""
+    """Help Functions"""
 
     # function to get files in directory
     def get_files(self, extension:str) -> list[str]:
