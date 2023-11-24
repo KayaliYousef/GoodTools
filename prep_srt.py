@@ -111,8 +111,8 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
         for old_text, new_text in zip(json_data["entries"], result["entries"]):
             old_text = old_text["text"]
             new_text = new_text["text"]
-            if '\n' in old_text:
-                ratio = old_text.split('\n')
+            if '\n' in old_text.strip():
+                ratio = old_text.strip().split('\n')
                 ratio = len(ratio[0].split())
                 index = 0
                 tracker = 0
