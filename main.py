@@ -348,8 +348,10 @@ class UI(QMainWindow):
             sep = self.srtPrepSeperatorTextEdit.toPlainText()
             txt_to_append = f'<font color="#014d6b">Successfully saved srt time stamps from </font> <font color="#039169">{srt_file.split("/")[-1]}</font> <font color="#014d6b">in JSON.<br><br>Output saved to:</font> <font color="#039169">{srt_file.replace(".srt", "_output.json")}</font><br>'
             helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+            
             total_seps = helper_functions.sub_srt_codes(srt_file, sep, output_in_input_path=True)
-            txt_to_append = f"<font color='#014d6b'>Successfully removed srt time stamps and replace them with</font> <font color='#ff8000'>{sep}</font><br>"
+            txt_to_append = f"<font color='#014d6b'>Successfully removed srt time stamps and replace them with</font> <font color='#ff8000'>{sep}</font><br><br><font color='#014d6b'>Output saved to:</font> <font color='#039169'>{srt_file.rsplit('.', 1)[0]}</font><br>"
+
             helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
             if total_blocks != total_seps:
                 txt_to_append = f"<font color='red'>The total number of translation blocks ({total_blocks}) doesn't match with the total number of inserted seperators ({total_seps}). This error will affect the reconstruction process</font><br>"
