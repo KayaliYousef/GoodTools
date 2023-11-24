@@ -1,7 +1,9 @@
 import re
 import json
 
-def srt_to_json(srt_file_path):
+import helper_functions
+
+def srt_to_json(srt_file_path:str) -> int:
     # Read the SRT file
     with open(srt_file_path, 'r', encoding='utf-8') as file:
         srt_content = file.read()
@@ -65,8 +67,71 @@ def srt_to_json(srt_file_path):
     with open(json_file_path, 'w', encoding='utf-8') as json_file:
         json.dump(result, json_file, ensure_ascii=False, indent=2)
 
-    print(f'Successfully converted {srt_file_path} to JSON. Output saved to {json_file_path}')
+    return result["additional_info"]["total_blocks"]
 
-# Example usage:
-srt_file_path = 'القضية/Watch How CNN Profits from Genocide in Gaza.en.srt'
-srt_to_json(srt_file_path)
+
+def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, text_edit:object, sep="$$$$") -> int:
+    # Load the JSON data
+    with open(json_file_path, "r", encoding='utf-8') as json_file:
+        json_data = json.load(json_file)
+
+    # Read the text file
+    with open(txt_file_path, "r", encoding='utf-8') as file:
+        text_content = file.read()
+    
+    total_blocks = json_data["additional_info"]["total_blocks"]
+    total_seps = text_content.count(sep)
+
+    if total_blocks == total_seps:
+        # Replace dollar signs with block numbers and time codes
+        for i, entry in enumerate(json_data["entries"]):
+            if i == 0:
+                placeholder = f"{entry['block_number']}\n{entry['time_code']}\n"
+            else:
+                placeholder = f"\n\n{entry['block_number']}\n{entry['time_code']}\n"
+            text_content = text_content.replace(sep, placeholder, 1)
+
+        # Split the content into blocks based on the blank lines
+        srt_blocks = re.split(r'\n\s*\n', text_content.strip())
+        # Initialize a list to store JSON entries
+        json_entries = []
+        for block in srt_blocks:
+            # Extract block number, time code, and text using regex
+            match = re.match(r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+)', block, re.DOTALL)
+            if match:
+                _, _, _, text = match.groups()
+                # Create a dictionary for the JSON entry
+                entry = {
+                    'text': text.strip(),
+                }
+                # Append the entry to the list
+                json_entries.append(entry)
+        result = {'entries': json_entries}
+
+        for old_text, new_text in zip(json_data["entries"], result["entries"]):
+            old_text = old_text["text"]
+            new_text = new_text["text"]
+            if '\n' in old_text:
+                ratio = old_text.split('\n')
+                ratio = len(ratio[0].split())
+                index = 0
+                tracker = 0
+                for i, letter in enumerate(new_text):
+                    if letter == " ":
+                        tracker += 1
+                        index = i
+                    if tracker == ratio:
+                        break
+                new_text_with_linebreak = new_text[:index]+"\n"+new_text[index+1:]
+                text_content = re.sub(new_text, new_text_with_linebreak, text_content, 1)
+
+        # Save the result to a new file
+        srt_file_path = txt_file_path.rsplit(".", 1)[0]+"_new.srt"
+        with open(srt_file_path, "w", encoding='utf-8') as output_file:
+            output_file.write(text_content)
+        return 0
+    else:
+        txt_to_append = f"<font color='red'>The total number of translation blocks ({total_blocks}) doesn't match with the total number of inserted seperators ({total_seps})"
+        helper_functions.append_to_textedit(text_edit, txt_to_append)
+        return 1
+

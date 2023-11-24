@@ -1,17 +1,20 @@
 import difflib
 import glob
+import os
 import re
 import sys
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QTextEdit, QRadioButton, QFileDialog
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QTextEdit, QRadioButton, QFileDialog, QCheckBox
+from PyQt5.QtGui import QIcon, QTextCursor
 
 import convention_validator as cv
 import sort
 import srt_vtt_converter
+import prep_srt
+import helper_functions
 
-VERSION = "1.3.0"
+VERSION = "1.5.0"
 
 class UI(QMainWindow):
   # constructor
@@ -24,6 +27,9 @@ class UI(QMainWindow):
 
         # Define Widgets
         # Labels
+        # Check Boxes
+        self.srtPrepDeleteJsonCheckBox = self.findChild(QCheckBox, "srtPrepDeleteJsonCheckBox")
+        self.srtPrepDeleteTxtCheckBox = self.findChild(QCheckBox, "srtPrepDeleteTxtCheckBox")
         # Radio Buttons
         self.srtRadioButton = self.findChild(QRadioButton, "srtRadioButton")
         self.txtRadioButton = self.findChild(QRadioButton, "txtRadioButton")
@@ -35,13 +41,24 @@ class UI(QMainWindow):
         self.cleanPushButton =self.findChild(QPushButton, "cleanPushButton")
         self.validatePushButton = self.findChild(QPushButton, "validatePushButton")
         self.checkSequencePushButton = self.findChild(QPushButton, "checkSequencePushButton")
-        self.fileDialog1 =self.findChild(QPushButton, "fileDialog1")    
-        self.fileDialog2 =self.findChild(QPushButton, "fileDialog2")
+        self.prepSrtPushButton = self.findChild(QPushButton, "prepSrtPushButton")
+        self.reConstructSrtPushButton = self.findChild(QPushButton, "reConstructSrtPushButton")
+        self.fileDialog1 = self.findChild(QPushButton, "fileDialog1")    
+        self.fileDialog2 = self.findChild(QPushButton, "fileDialog2")
+        self.srtPrepLoadSrtfileDialog = self.findChild(QPushButton, "srtPrepLoadSrtfileDialog")
+        self.srtPrepLoadJsonfileDialog = self.findChild(QPushButton, "srtPrepLoadJsonfileDialog")
+        self.srtPrepLoadTxtfileDialog = self.findChild(QPushButton, "srtPrepLoadTxtfileDialog")
         # Entries
         self.firstFileName = self.findChild(QTextEdit, "firstFile")
         self.secondFileName = self.findChild(QTextEdit, "secondFile")
         self.validateFeedbackTextEdit = self.findChild(QTextEdit, "validateFeedbackTextEdit")
         self.checkSequenceFeedbackTextEdit = self.findChild(QTextEdit, "checkSequenceFeedbackTextEdit")
+        self.srtPrepLoadSrtTextEdit = self.findChild(QTextEdit, "srtPrepLoadSrtTextEdit")
+        self.srtPrepSeperatorTextEdit = self.findChild(QTextEdit, "srtPrepSeperatorTextEdit")
+        self.srtPrepLoadJsonTextEdit = self.findChild(QTextEdit, "srtPrepLoadJsonTextEdit")
+        self.srtPrepLoadTxtTextEdit = self.findChild(QTextEdit, "srtPrepLoadTxtTextEdit")
+        self.srtPrepFeedbackTextEdit = self.findChild(QTextEdit, "srtPrepFeedbackTextEdit")
+        self.srtPrepSeperatorTextEdit.setText("$$$$")
         # Connect Buttons
         self.comparePushButton.clicked.connect(self.compare)
         self.sortPushButton.clicked.connect(self.sort_srt)
@@ -51,58 +68,42 @@ class UI(QMainWindow):
         self.checkSequencePushButton.clicked.connect(self.check_timecode_sequence)
         self.fileDialog1.clicked.connect(self.browse1)
         self.fileDialog2.clicked.connect(self.browse2)
+        self.srtPrepLoadSrtfileDialog.clicked.connect(self.browse_load_srt_to_prep)
+        self.srtPrepLoadJsonfileDialog.clicked.connect(self.browse_load_json_to_reconstruct_srt)
+        self.srtPrepLoadTxtfileDialog.clicked.connect(self.browse_load_txt_to_reconstruct_srt)
+        self.prepSrtPushButton.clicked.connect(self.prepare_srt_for_deepl)
+        self.reConstructSrtPushButton.clicked.connect(self.reconstruct_srt_from_json)
 
     def browse1(self):
         self.firstFileName.setText("")
-        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt) (*.srt)")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.srt)")
         self.firstFileName.setText(fname[0])
     def browse2(self):
         self.secondFileName.setText("")
-        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt) (*.srt)")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.srt)")
         self.secondFileName.setText(fname[0])
+    def browse_load_srt_to_prep(self):
+        self.srtPrepLoadSrtTextEdit.setText("")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.srt)")
+        self.srtPrepLoadSrtTextEdit.setText(fname[0])
+    def browse_load_json_to_reconstruct_srt(self):
+        self.srtPrepLoadJsonTextEdit.setText("")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.json)")
+        self.srtPrepLoadJsonTextEdit.setText(fname[0])
+    def browse_load_txt_to_reconstruct_srt(self):
+        self.srtPrepLoadTxtTextEdit.setText("")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt)")
+        self.srtPrepLoadTxtTextEdit.setText(fname[0])
 
-    """Help Functions"""
 
-    # function to get files in directory
-    def get_files(self, extension:str) -> list[str]:
-        files = []
-        for file in glob.glob("*."+extension):
-            files.append(file)
-        return files
-    
-    # function to remove time code and block indexes from srt
-    def clean_srt(self, srt_file_path:str) -> str:
-        path = re.sub(r"\\", "/", srt_file_path)
-        with open(path, 'r', encoding="utf-8") as f:
-            text = f.readlines()
-        # remove time codes and subtitle block indexes
-        cleaned_lines = [line for line in text if not (line.strip().isdigit() or '-->' in line)]
-        # remove empty lines
-        cleaned_lines = [line for line in cleaned_lines if line.strip()]
-        return '\n'.join(cleaned_lines)
-    
-    def convert_timecode_to_milisec(self, timecode:str) -> (int, int):
-        start, end = timecode.split("-->")
-        #* hours, minutes seconds and miliseconds
-        h_start, m_start, s_start = start.split(":")
-        #* seconds and miliseocnds
-        s_start, ms_start = s_start.split(",")
-        #* hours, minutes seconds and miliseconds
-        h_end, m_end, s_end = end.split(":")
-        #* seconds and miliseocnds
-        s_end, ms_end = s_end.split(",")
-        start = int(h_start) * 3600000 + int(m_start) * 60000 + int(s_start) * 1000 + int(ms_start)
-        end = int(h_end) * 3600000 + int(m_end) * 60000 + int(s_end) * 1000 + int(ms_end)
-        return start, end
-    
     """Compare Tab"""
     # function to compare two files (srt or txt) and output the difference in an html file
     def compare(self):
-        fname1 = self.firstFileName.toPlainText().replace("file:///", "")
-        fname2 = self.secondFileName.toPlainText().replace("file:///", "")
+        fname1 = self.firstFileName.toPlainText().replace("file:///", "").replace("\\", "/")
+        fname2 = self.secondFileName.toPlainText().replace("file:///", "").replace("\\", "/")
         if self.srtRadioButton.isChecked():
-            text1 = self.clean_srt(fname1)
-            text2 = self.clean_srt(fname2)
+            text1 = helper_functions.clean_srt(fname1)
+            text2 = helper_functions.clean_srt(fname2)
             # Split the texts into lines
             lines1 = text1.splitlines()
             lines2 = text2.splitlines()
@@ -159,8 +160,8 @@ class UI(QMainWindow):
     """Convert Tab"""
     # function to convert files between srt and vtt
     def convert(self):
-        srt_files = self.get_files("srt")
-        vtt_files = self.get_files("vtt")
+        srt_files = helper_functions.get_files("srt")
+        vtt_files = helper_functions.get_files("vtt")
         for file in srt_files:
             srt_vtt_converter.convert_srt_to_vtt(file)
         for file in vtt_files:
@@ -168,34 +169,13 @@ class UI(QMainWindow):
 
     """Clean Tab"""
     def clean(self):
-        srt_files = self.get_files("srt")
+        srt_files = helper_functions.get_files("srt")
         for file in srt_files:
-            self.srt_to_plaintext(file)
+            helper_functions.srt_to_plaintext(file)
 
-    # function to cenvert srt to plain text removing the line breaks and adding new line breaks after every dot
-    def srt_to_plaintext(self, srt_file_path:str) -> str:
-        path = re.sub(r"\\", "/", srt_file_path)
-        with open(path, 'r', encoding="utf-8") as f:
-            text = f.readlines()
-        # remove time codes and subtitle block indexes
-        cleaned_lines = [line for line in text if not (line.strip().isdigit() or '-->' in line)]
-        # remove empty lines
-        cleaned_lines = [line for line in cleaned_lines if line.strip()]
-        # remove line breaks
-        cleaned_lines = [line.strip() for line in cleaned_lines]
-        # join the text together
-        cleaned_lines = ''.join(cleaned_lines)
-        # add line breaks after dots
-        cleaned_lines = re.sub(r'\.(?![\.\.])\s*', '.\n', cleaned_lines)
-        fileName = srt_file_path.split("/")
-        fileName = fileName[-1].split(".")
-        fileName = fileName[0]
-        with open(f"{fileName}.txt", "w") as vtt_file:
-            vtt_file.write(cleaned_lines)
-    
     """Validate Tab"""
     def validate_srt(self) -> str:
-        srt_files = self.get_files("srt")
+        srt_files = helper_functions.get_files("srt")
         if not len(srt_files):
             self.validateFeedbackTextEdit.setPlainText("No Files Found")
             return
@@ -230,7 +210,7 @@ class UI(QMainWindow):
 
     """Check Sequence Tab"""
     def check_timecode_sequence(self):
-        srt_files = self.get_files("srt")
+        srt_files = helper_functions.get_files("srt")
         if not len(srt_files):
             self.checkSequenceFeedbackTextEdit.setPlainText("No Files Found")
             return
@@ -251,10 +231,10 @@ class UI(QMainWindow):
             block_index = 0
             block_index_indexes = []
 
-            with open(file, "r") as srt_file:
+            with open(file, "r", encoding='utf-8') as srt_file:
                 #? Read the contents of the file
                 srt_contents = srt_file.read()
-            with open(file, "r") as srt_file:
+            with open(file, "r", encoding='utf-8') as srt_file:
                 srt_contents_lines = srt_file.readlines()
             #? find the timecodes
             pattern = r"\d+.*\d+.*\d+.*\d+.*\d+.*\d+.*\d+.*\d+"
@@ -265,7 +245,7 @@ class UI(QMainWindow):
                     block_format_error[f"{file}"].append(line)
                     continue
                 try:
-                    start, end = self.convert_timecode_to_milisec(line)
+                    start, end = helper_functions.convert_timecode_to_milisec(line)
                     if start > end:
                         error_within_one_block[f"{file}"].append(line)
                 except:
@@ -273,13 +253,13 @@ class UI(QMainWindow):
 
             for i in range(len(srt_timecodes) - 1):
                 try:
-                    _, current_block_end = self.convert_timecode_to_milisec(srt_timecodes[i])
+                    _, current_block_end = helper_functions.convert_timecode_to_milisec(srt_timecodes[i])
                 except:
                     if not srt_timecodes[i] in block_format_error[f"{file}"]:
                         block_format_error[f"{file}"].append(srt_timecodes[i])
                     continue
                 try:
-                    next_block_start, _ = self.convert_timecode_to_milisec(srt_timecodes[i + 1])
+                    next_block_start, _ = helper_functions.convert_timecode_to_milisec(srt_timecodes[i + 1])
                 except:
                     if not srt_timecodes[i + 1] in block_format_error[f"{file}"]:
                         block_format_error[f"{file}"].append(srt_timecodes[i + 1])
@@ -358,6 +338,41 @@ class UI(QMainWindow):
                         temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#690391'>{error}</font>"
                         self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+
+    """Prep SRT Tab"""
+    # function to compare two files (srt or txt) and output the difference in an html file
+    def prepare_srt_for_deepl(self):
+        srt_file = self.srtPrepLoadSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        if srt_file:
+            total_blocks = prep_srt.srt_to_json(srt_file)
+            sep = self.srtPrepSeperatorTextEdit.toPlainText()
+            txt_to_append = f'<font color="#014d6b">Successfully saved srt time stamps from </font> <font color="#039169">{srt_file.split("/")[-1]}</font> <font color="#014d6b">in JSON.<br><br>Output saved to:</font> <font color="#039169">{srt_file.replace(".srt", "_output.json")}</font><br>'
+            helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+            total_seps = helper_functions.sub_srt_codes(srt_file, sep, output_in_input_path=True)
+            txt_to_append = f"<font color='#014d6b'>Successfully removed srt time stamps and replace them with</font> <font color='#ff8000'>{sep}</font><br>"
+            helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+            if total_blocks != total_seps:
+                txt_to_append = f"<font color='red'>The total number of translation blocks ({total_blocks}) doesn't match with the total number of inserted seperators ({total_seps}). This error will affect the reconstruction process</font><br>"
+                helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+
+    def reconstruct_srt_from_json(self):
+        json_file = self.srtPrepLoadJsonTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        txt_file = self.srtPrepLoadTxtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        if json_file and txt_file:
+            sep = self.srtPrepSeperatorTextEdit.toPlainText()
+            res = prep_srt.reconstruct_srt_from_json_and_txt(json_file, txt_file, self.srtPrepFeedbackTextEdit, sep)
+            if res == 0:
+                txt_to_append = f"<font color='#014d6b'>Successfully reconstructed SRT from JSON and TXT.<br>Output saved to</font> <font color='#039169'>{txt_file.rsplit('.', 1)[0]+'_new.srt'}</font><br>"
+                helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+                if self.srtPrepDeleteJsonCheckBox.isChecked():
+                    os.remove(json_file)
+                    txt_to_append = f"<font color='#014d6b'>Successfully removed</font> <font color='#6b0101'>{json_file}</font>"
+                    helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+                if self.srtPrepDeleteTxtCheckBox.isChecked():
+                    os.remove(txt_file)
+                    txt_to_append = f"<font color='#014d6b'>Successfully removed</font> <font color='#6b0101'> {txt_file}</font>"
+                    helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+                
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
