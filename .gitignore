@@ -3,5 +3,6 @@ output/
 **/.vscode
 files/
 srt/
+dist/
 test.py
 diffOnly.py

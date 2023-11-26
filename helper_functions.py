@@ -66,7 +66,7 @@ def srt_to_plaintext(srt_file_path:str, output_in_input_path=False) -> str:
     with open(f"{fileName}.txt", "w", encoding='utf-8') as srt_file:
         srt_file.write(cleaned_lines)
 
-def sub_srt_codes(srt_file_path:str, sep="$$$$", output_in_input_path=False) -> int:
+def sub_srt_codes(srt_file_path:str, sep="$$$$", output_in_input_path=False) -> tuple[int, int]:
     path = re.sub(r"\\", "/", srt_file_path)
     with open(path, 'r', encoding="utf-8") as f:
         text = f.read()
@@ -87,4 +87,4 @@ def sub_srt_codes(srt_file_path:str, sep="$$$$", output_in_input_path=False) -> 
     with open(f"{fileName}.txt", "w", encoding='utf-8') as srt_file:
         srt_file.write(text)
 
-    return text.count(sep)
+    return text.count(sep), len(text)

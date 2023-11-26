@@ -340,17 +340,19 @@ class UI(QMainWindow):
                         self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
 
     """Prep SRT Tab"""
-    # function to compare two files (srt or txt) and output the difference in an html file
     def prepare_srt_for_deepl(self):
         srt_file = self.srtPrepLoadSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        sep = self.srtPrepSeperatorTextEdit.toPlainText()
+
         if srt_file:
-            total_blocks = prep_srt.srt_to_json(srt_file)
-            sep = self.srtPrepSeperatorTextEdit.toPlainText()
+
+            total_seps, text_len = helper_functions.sub_srt_codes(srt_file, sep, output_in_input_path=True)
+            txt_to_append = f"<font color='#014d6b'>Successfully removed srt time stamps and replace them with</font> <font color='#ff8000'>{sep}</font><br><br><font color='#014d6b'>Output saved to:</font> <font color='#039169'>{srt_file.rsplit('.', 1)[0]}</font><br>"
+
+            total_blocks = prep_srt.srt_to_json(srt_file,  text_len)
             txt_to_append = f'<font color="#014d6b">Successfully saved srt time stamps from </font> <font color="#039169">{srt_file.split("/")[-1]}</font> <font color="#014d6b">in JSON.<br><br>Output saved to:</font> <font color="#039169">{srt_file.replace(".srt", "_output.json")}</font><br>'
             helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
             
-            total_seps = helper_functions.sub_srt_codes(srt_file, sep, output_in_input_path=True)
-            txt_to_append = f"<font color='#014d6b'>Successfully removed srt time stamps and replace them with</font> <font color='#ff8000'>{sep}</font><br><br><font color='#014d6b'>Output saved to:</font> <font color='#039169'>{srt_file.rsplit('.', 1)[0]}</font><br>"
 
             helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
             if total_blocks != total_seps:

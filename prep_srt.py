@@ -3,7 +3,7 @@ import json
 
 import helper_functions
 
-def srt_to_json(srt_file_path:str) -> int:
+def srt_to_json(srt_file_path:str, text_len:int) -> int:
     # Read the SRT file
     with open(srt_file_path, 'r', encoding='utf-8') as file:
         srt_content = file.read()
@@ -54,7 +54,10 @@ def srt_to_json(srt_file_path:str) -> int:
     # Additional information to include in the JSON file
     additional_info = {
         'total_duration': total_duration,
-        'total_characters': total_characters,
+        'total_characters': {
+            'without_white_spaces_or_separators': total_characters,
+            'with_white_spaces_and_separators': text_len
+        },
         'average_characters_per_second': average_characters_per_second,
         'total_blocks': len(json_entries)
     }
@@ -86,9 +89,9 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
         # Replace dollar signs with block numbers and time codes
         for i, entry in enumerate(json_data["entries"]):
             if i == 0:
-                placeholder = f"{entry['block_number']}\n{entry['time_code']}\n"
+                placeholder = f"{entry['block_number']}\n{entry['time_code'].strip()}\n"
             else:
-                placeholder = f"\n\n{entry['block_number']}\n{entry['time_code']}\n"
+                placeholder = f"\n\n{entry['block_number']}\n{entry['time_code'].strip()}\n"
             text_content = text_content.replace(sep, placeholder, 1)
 
         # Split the content into blocks based on the blank lines
