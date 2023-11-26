@@ -1,5 +1,6 @@
 import re
 import json
+import copy
 
 import helper_functions
 
@@ -72,6 +73,26 @@ def srt_to_json(srt_file_path:str, text_len:int) -> int:
 
     return result["additional_info"]["total_blocks"]
 
+def json_to_srt(json_data: str) -> str:
+    # Extract entries and additional information
+    entries = json_data.get('entries', [])
+
+    # Initialize an empty string to store the SRT content
+    srt_content = ''
+
+    for entry in entries:
+        # Extract information from the JSON entry
+        block_number = entry.get('block_number', '')
+        time_code = entry.get('time_code', '')
+        text = entry.get('text', '')
+
+        # Create the SRT block
+        srt_block = f"{block_number}\n{time_code}\n{text}\n\n"
+
+        # Append the SRT block to the content
+        srt_content += srt_block
+
+    return srt_content
 
 def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, text_edit:object, sep="$$$$") -> int:
     # Load the JSON data
@@ -86,34 +107,17 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
     total_seps = text_content.count(sep)
 
     if total_blocks == total_seps:
-        # Replace dollar signs with block numbers and time codes
-        for i, entry in enumerate(json_data["entries"]):
-            if i == 0:
-                placeholder = f"{entry['block_number']}\n{entry['time_code'].strip()}\n"
-            else:
-                placeholder = f"\n\n{entry['block_number']}\n{entry['time_code'].strip()}\n"
-            text_content = text_content.replace(sep, placeholder, 1)
+        text_blocks = text_content.split(sep)
+        text_blocks = text_blocks[1:]
+        print(len(text_blocks), total_blocks)
+        # dict to save the translation into
+        json_data_copy = copy.deepcopy(json_data)
+        for text_block, json_entry in zip(text_blocks, json_data_copy["entries"]):
+            json_entry["text"] = text_block.strip()
 
-        # Split the content into blocks based on the blank lines
-        srt_blocks = re.split(r'\n\s*\n', text_content.strip())
-        # Initialize a list to store JSON entries
-        json_entries = []
-        for block in srt_blocks:
-            # Extract block number, time code, and text using regex
-            match = re.match(r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+)', block, re.DOTALL)
-            if match:
-                _, _, _, text = match.groups()
-                # Create a dictionary for the JSON entry
-                entry = {
-                    'text': text.strip(),
-                }
-                # Append the entry to the list
-                json_entries.append(entry)
-        result = {'entries': json_entries}
-
-        for old_text, new_text in zip(json_data["entries"], result["entries"]):
-            old_text = old_text["text"]
-            new_text = new_text["text"]
+        for old_entry, new_entry in zip(json_data["entries"], json_data_copy["entries"]):
+            old_text = old_entry["text"]
+            new_text = new_entry["text"]
             if '\n' in old_text.strip():
                 ratio = old_text.strip().split('\n')
                 ratio = len(ratio[0].split())
@@ -126,12 +130,14 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
                     if tracker == ratio:
                         break
                 new_text_with_linebreak = new_text[:index]+"\n"+new_text[index+1:]
-                text_content = re.sub(new_text, new_text_with_linebreak, text_content, 1)
+                new_entry["text"] = new_text_with_linebreak
+
+        srt_content = json_to_srt(json_data_copy)
 
         # Save the result to a new file
         srt_file_path = txt_file_path.rsplit(".", 1)[0]+"_new.srt"
         with open(srt_file_path, "w", encoding='utf-8') as output_file:
-            output_file.write(text_content)
+            output_file.write(srt_content)
         return 0
     else:
         txt_to_append = f"<font color='red'>The total number of translation blocks ({total_blocks}) doesn't match with the total number of inserted seperators ({total_seps})"
