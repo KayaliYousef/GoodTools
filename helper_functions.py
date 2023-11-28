@@ -73,18 +73,43 @@ def sub_srt_codes(srt_file_path:str, sep="$$$$", output_in_input_path=False) -> 
     pattern = re.compile(r'^\d+\n.*\n', re.MULTILINE)
     # Replace the matches with the modified format
     text = re.sub(pattern, sep, text)
+    # split the text into lines
     text = text.splitlines()
+    # remove empty lines
     text = [line for line in text if line.strip()]
-    text = [line.strip()+" " for line in text]
-    text = ''.join(text)
+    # strip lines
+    text = [line.strip() for line in text]
+    # rejoin the text back together with white spaces between lines
+    text = ' '.join(text)
 
-    # text = text.replace("\n", " ")
+    # splitting the text into lines with maximum length of 5000 characters
+    new_text = ""
+    marker = 0
+    tracker = 0
+    previous_dot_index = 0
+    dot_index = 0
+    max_number_of_characters = 5000
+    for i, char in enumerate(text):
+        tracker += 1
+        if '.' in char:
+            dot_index = i
+        if tracker >= max_number_of_characters and dot_index != previous_dot_index:
+            text_chunk = text[marker:dot_index+1].strip()
+            new_text += text_chunk + "\n\n"
+            marker = dot_index+1
+            tracker = i - dot_index+1
+            previous_dot_index = dot_index
+        if tracker < max_number_of_characters and i == len(text)-1:
+            text_chunk = text[marker:].strip()
+            new_text += text_chunk
+        
+    
     if output_in_input_path:
         fileName = srt_file_path.rsplit(".", 1)[0]
     else:
         fileName = srt_file_path.split("/")
         fileName = fileName[-1].rsplit(".", 1)[0]
     with open(f"{fileName}.txt", "w", encoding='utf-8') as srt_file:
-        srt_file.write(text)
+        srt_file.write(new_text)
 
-    return text.count(sep), len(text)
+    return new_text.count(sep), len(new_text)

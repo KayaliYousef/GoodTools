@@ -344,8 +344,7 @@ class UI(QMainWindow):
         srt_file = self.srtPrepLoadSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         sep = self.srtPrepSeperatorTextEdit.toPlainText()
 
-        if srt_file:
-
+        if srt_file and sep:
             total_seps, text_len = helper_functions.sub_srt_codes(srt_file, sep, output_in_input_path=True)
             txt_to_append = f"<font color='#014d6b'>Successfully removed srt time stamps and replace them with</font> <font color='#ff8000'>{sep}</font><br><br><font color='#014d6b'>Output saved to:</font> <font color='#039169'>{srt_file.rsplit('.', 1)[0]}</font><br>"
 
