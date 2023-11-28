@@ -8,7 +8,7 @@ def get_files():
         files.append(file)
     return files
 
-def sort(files):
+def sort(files:str):
     """
     get all lines of each file and sort them by time.
     """
@@ -17,7 +17,7 @@ def sort(files):
         # open orginal file 
         with open(file, 'r+', encoding="utf-8") as outfile:
             # open new file for the new changes
-            name, srt = file.split(".")
+            name, srt = file.rsplit(".", 1)
             name = name.split("\\")
             name = name[-1]
             new_file_name = name + "_s." + srt
