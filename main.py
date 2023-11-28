@@ -58,7 +58,7 @@ class UI(QMainWindow):
         self.srtPrepLoadJsonTextEdit = self.findChild(QTextEdit, "srtPrepLoadJsonTextEdit")
         self.srtPrepLoadTxtTextEdit = self.findChild(QTextEdit, "srtPrepLoadTxtTextEdit")
         self.srtPrepFeedbackTextEdit = self.findChild(QTextEdit, "srtPrepFeedbackTextEdit")
-        self.srtPrepSeperatorTextEdit.setText("$$$$")
+        self.srtPrepSeperatorTextEdit.setText("<تست>")
         # Connect Buttons
         self.comparePushButton.clicked.connect(self.compare)
         self.sortPushButton.clicked.connect(self.sort_srt)

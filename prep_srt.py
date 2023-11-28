@@ -109,7 +109,6 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
     if total_blocks == total_seps:
         text_blocks = text_content.split(sep)
         text_blocks = text_blocks[1:]
-        print(len(text_blocks), total_blocks)
         # dict to save the translation into
         json_data_copy = copy.deepcopy(json_data)
         for text_block, json_entry in zip(text_blocks, json_data_copy["entries"]):
