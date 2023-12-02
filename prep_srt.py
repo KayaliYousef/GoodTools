@@ -1,11 +1,13 @@
 import re
 import json
 import copy
+import random
 
 import helper_functions
 
-def srt_to_json(srt_file_path:str, text_len:int) -> int:
+def srt_to_json(srt_file_path:str, text_len:int) -> None:
     # Read the SRT file
+
     with open(srt_file_path, 'r', encoding='utf-8') as file:
         srt_content = file.read()
 
@@ -14,9 +16,19 @@ def srt_to_json(srt_file_path:str, text_len:int) -> int:
 
     # Initialize a list to store JSON entries
     json_entries = []
+    weights = []
 
     total_duration = 0  # Variable to store the total duration of the subtitle file
     total_characters = 0  # Variable to store the total number of characters in the subtitle file
+
+    for block in srt_blocks:
+        # Extract block number, time code, and text using regex
+        match = re.match(r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+)', block, re.DOTALL)
+
+        if match:
+            block_number, start_time, end_time, text = match.groups()
+            num_characters = len(text)
+            total_characters += num_characters
 
     for block in srt_blocks:
         # Extract block number, time code, and text using regex
@@ -31,7 +43,9 @@ def srt_to_json(srt_file_path:str, text_len:int) -> int:
             duration = end_seconds - start_seconds
 
             # Calculate the number of characters in the text
-            num_characters = len(re.sub(r'\s', '', text))
+            num_characters = len(text)
+            weight = (num_characters / total_characters) * 100
+            weights.append(weight)
 
             # Create a dictionary for the JSON entry
             entry = {
@@ -39,6 +53,7 @@ def srt_to_json(srt_file_path:str, text_len:int) -> int:
                 'time_code': f'{start_time} --> {end_time}',
                 'text': text.strip(),
                 'num_characters': num_characters,
+                'weight' : weight,
                 'duration': duration
             }
 
@@ -47,7 +62,6 @@ def srt_to_json(srt_file_path:str, text_len:int) -> int:
 
             # Update total duration and total characters
             total_duration += duration
-            total_characters += num_characters
 
     # Calculate average characters per second
     average_characters_per_second = total_characters / total_duration if total_duration > 0 else 0
@@ -55,10 +69,9 @@ def srt_to_json(srt_file_path:str, text_len:int) -> int:
     # Additional information to include in the JSON file
     additional_info = {
         'total_duration': total_duration,
-        'total_characters': {
-            'without_white_spaces_or_separators': total_characters,
-            'with_white_spaces_and_separators': text_len
-        },
+        'total_characters': total_characters,
+        'total_weight': sum(weights),
+        'weights_list': weights,
         'average_characters_per_second': average_characters_per_second,
         'total_blocks': len(json_entries)
     }
@@ -71,7 +84,6 @@ def srt_to_json(srt_file_path:str, text_len:int) -> int:
     with open(json_file_path, 'w', encoding='utf-8') as json_file:
         json.dump(result, json_file, ensure_ascii=False, indent=2)
 
-    return result["additional_info"]["total_blocks"]
 
 def json_to_srt(json_data: str) -> str:
     # Extract entries and additional information
@@ -94,7 +106,34 @@ def json_to_srt(json_data: str) -> str:
 
     return srt_content
 
-def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, text_edit:object, sep="$$$$") -> int:
+def divide_text_with_weights(text, weights):
+    total_weights = sum(weights)
+    percentages = [weight / total_weights for weight in weights]
+
+    chunks = []
+    start_index = 0
+    options = ["add", "add"]
+
+    for percentage in percentages:
+        # Find the index where the split should occur based on white spaces
+        end_index = start_index + int(percentage * len(text))
+        if random.choice(options) == "add":
+            while end_index < len(text) and not text[end_index].isspace():
+                end_index += 1
+        else:
+            while end_index < len(text) and not text[end_index].isspace():
+                end_index -= 1
+
+        chunks.append(text[start_index:end_index].strip())
+        start_index = end_index
+
+    # Adding the remaining text, if any, to the last chunk
+    if start_index < len(text):
+        chunks[-1] += text[start_index:]
+
+    return chunks
+
+def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, text_edit:object) -> None:
     # Load the JSON data
     with open(json_file_path, "r", encoding='utf-8') as json_file:
         json_data = json.load(json_file)
@@ -103,43 +142,37 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
     with open(txt_file_path, "r", encoding='utf-8') as file:
         text_content = file.read()
     
-    total_blocks = json_data["additional_info"]["total_blocks"]
-    total_seps = text_content.count(sep)
+    weights = json_data["additional_info"]["weights_list"]
+    # dict to save the translation into
+    json_data_copy = copy.deepcopy(json_data)
 
-    if total_blocks == total_seps:
-        text_blocks = text_content.split(sep)
-        text_blocks = text_blocks[1:]
-        # dict to save the translation into
-        json_data_copy = copy.deepcopy(json_data)
-        for text_block, json_entry in zip(text_blocks, json_data_copy["entries"]):
-            json_entry["text"] = text_block.strip()
+    text_chuncks = divide_text_with_weights(text_content, weights)
+    for text_block, json_entry in zip(text_chuncks, json_data_copy["entries"]):
+        json_entry["text"] = text_block.strip()
 
-        for old_entry, new_entry in zip(json_data["entries"], json_data_copy["entries"]):
-            old_text = old_entry["text"]
-            new_text = new_entry["text"]
-            if '\n' in old_text.strip():
-                ratio = old_text.strip().split('\n')
-                ratio = len(ratio[0].split())
-                index = 0
-                tracker = 0
-                for i, letter in enumerate(new_text):
-                    if letter == " ":
-                        tracker += 1
-                        index = i
-                    if tracker == ratio:
-                        break
-                new_text_with_linebreak = new_text[:index]+"\n"+new_text[index+1:]
-                new_entry["text"] = new_text_with_linebreak
+    # for old_entry, new_entry in zip(json_data["entries"], json_data_copy["entries"]):
+    #     old_text = old_entry["text"]
+    #     new_text = new_entry["text"]
+    #     if '\n' in old_text.strip():
+    #         ratio = old_text.strip().split('\n')
+    #         ratio = len(ratio[0].split())
+    #         index = 0
+    #         tracker = 0
+    #         for i, letter in enumerate(new_text):
+    #             if letter == " ":
+    #                 tracker += 1
+    #                 index = i
+    #             if tracker == ratio:
+    #                 break
+    #         new_text_with_linebreak = new_text[:index]+"\n"+new_text[index+1:]
+    #         new_entry["text"] = new_text_with_linebreak
 
-        srt_content = json_to_srt(json_data_copy)
 
-        # Save the result to a new file
-        srt_file_path = txt_file_path.rsplit(".", 1)[0]+"_new.srt"
-        with open(srt_file_path, "w", encoding='utf-8') as output_file:
-            output_file.write(srt_content)
-        return 0
-    else:
-        txt_to_append = f"<font color='red'>The total number of translation blocks ({total_blocks}) doesn't match with the total number of inserted seperators ({total_seps})"
-        helper_functions.append_to_textedit(text_edit, txt_to_append)
-        return 1
+
+    srt_content = json_to_srt(json_data_copy)
+
+    # Save the result to a new file
+    srt_file_path = txt_file_path.rsplit(".", 1)[0]+"_new.srt"
+    with open(srt_file_path, "w", encoding='utf-8') as output_file:
+        output_file.write(srt_content)
 
