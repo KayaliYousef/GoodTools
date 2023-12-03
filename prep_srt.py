@@ -112,17 +112,18 @@ def divide_text_with_weights(text, weights):
 
     chunks = []
     start_index = 0
-    options = ["add", "add"]
+    """
+    when splitting the text block using the percentages we make sure that the split only occurs at a white space so we keep adding characters to the text until we hit a white space then we make the split, but this process corrupts splitting of the text in that same weight as the origin text and results into some blocks at the end having no text at all. So to counter this we use this modifier which will count how many characters were to the current block then substract that amount from the next block. Doing that we ensure all blocks will have some text.
+    """
+    modifier = 0
 
     for percentage in percentages:
         # Find the index where the split should occur based on white spaces
-        end_index = start_index + int(percentage * len(text))
-        if random.choice(options) == "add":
-            while end_index < len(text) and not text[end_index].isspace():
-                end_index += 1
-        else:
-            while end_index < len(text) and not text[end_index].isspace():
-                end_index -= 1
+        end_index = start_index + round(percentage * len(text)) - modifier
+        modifier = 0
+        while end_index < len(text) and not text[end_index].isspace():
+            end_index += 1
+            modifier += 1
 
         chunks.append(text[start_index:end_index].strip())
         start_index = end_index
@@ -149,6 +150,9 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
     text_chuncks = divide_text_with_weights(text_content, weights)
     for text_block, json_entry in zip(text_chuncks, json_data_copy["entries"]):
         json_entry["text"] = text_block.strip()
+
+    with open("test.json", "w", encoding="utf-8") as f:
+        json.dump(json_data_copy, f)
 
     # for old_entry, new_entry in zip(json_data["entries"], json_data_copy["entries"]):
     #     old_text = old_entry["text"]
