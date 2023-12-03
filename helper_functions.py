@@ -66,13 +66,13 @@ def srt_to_plaintext(srt_file_path:str, output_in_input_path=False) -> str:
     with open(f"{fileName}.txt", "w", encoding='utf-8') as srt_file:
         srt_file.write(cleaned_lines)
 
-def sub_srt_codes(srt_file_path:str, sep="$$$$", output_in_input_path=False) -> tuple[int, int]:
+def sub_srt_codes(srt_file_path:str, output_in_input_path=False) -> tuple[int, int]:
     path = re.sub(r"\\", "/", srt_file_path)
     with open(path, 'r', encoding="utf-8") as f:
         text = f.read()
     pattern = re.compile(r'^\d+\n.*\n', re.MULTILINE)
     # Replace the matches with the modified format
-    text = re.sub(pattern, sep, text)
+    text = re.sub(pattern, "", text)
     # split the text into lines
     text = text.splitlines()
     # remove empty lines
@@ -112,4 +112,4 @@ def sub_srt_codes(srt_file_path:str, sep="$$$$", output_in_input_path=False) -> 
     with open(f"{fileName}.txt", "w", encoding='utf-8') as srt_file:
         srt_file.write(new_text)
 
-    return new_text.count(sep), len(new_text)
+    return len(new_text)

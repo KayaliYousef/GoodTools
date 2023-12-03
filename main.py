@@ -54,11 +54,9 @@ class UI(QMainWindow):
         self.validateFeedbackTextEdit = self.findChild(QTextEdit, "validateFeedbackTextEdit")
         self.checkSequenceFeedbackTextEdit = self.findChild(QTextEdit, "checkSequenceFeedbackTextEdit")
         self.srtPrepLoadSrtTextEdit = self.findChild(QTextEdit, "srtPrepLoadSrtTextEdit")
-        self.srtPrepSeperatorTextEdit = self.findChild(QTextEdit, "srtPrepSeperatorTextEdit")
         self.srtPrepLoadJsonTextEdit = self.findChild(QTextEdit, "srtPrepLoadJsonTextEdit")
         self.srtPrepLoadTxtTextEdit = self.findChild(QTextEdit, "srtPrepLoadTxtTextEdit")
         self.srtPrepFeedbackTextEdit = self.findChild(QTextEdit, "srtPrepFeedbackTextEdit")
-        self.srtPrepSeperatorTextEdit.setText("<تست>")
         # Connect Buttons
         self.comparePushButton.clicked.connect(self.compare)
         self.sortPushButton.clicked.connect(self.sort_srt)
@@ -342,39 +340,31 @@ class UI(QMainWindow):
     """Prep SRT Tab"""
     def prepare_srt_for_deepl(self):
         srt_file = self.srtPrepLoadSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
-        sep = self.srtPrepSeperatorTextEdit.toPlainText()
 
-        if srt_file and sep:
-            total_seps, text_len = helper_functions.sub_srt_codes(srt_file, sep, output_in_input_path=True)
-            txt_to_append = f"<font color='#014d6b'>Successfully removed srt time stamps and replace them with</font> <font color='#ff8000'>{sep}</font><br><br><font color='#014d6b'>Output saved to:</font> <font color='#039169'>{srt_file.rsplit('.', 1)[0]}</font><br>"
+        if srt_file:
+            text_len = helper_functions.sub_srt_codes(srt_file, output_in_input_path=True)
+            txt_to_append = f"<font color='#014d6b'>Successfully removed SRT timestamps and generated a text file containing chunks, each with a maximum length of 5000 characters.<font color='#014d6b'>Output saved to:</font> <font color='#039169'>{srt_file.rsplit('.', 1)[0]}.txt</font><br>"
+            helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
 
-            total_blocks = prep_srt.srt_to_json(srt_file,  text_len)
-            txt_to_append = f'<font color="#014d6b">Successfully saved srt time stamps from </font> <font color="#039169">{srt_file.split("/")[-1]}</font> <font color="#014d6b">in JSON.<br><br>Output saved to:</font> <font color="#039169">{srt_file.replace(".srt", "_output.json")}</font><br>'
+            prep_srt.srt_to_json(srt_file,  text_len)
+            txt_to_append = f'<font color="#014d6b">Successfully saved SRT time stamps from </font> <font color="#039169">{srt_file.split("/")[-1]}</font> <font color="#014d6b">in JSON.<br>Output saved to:</font> <font color="#039169">{srt_file.replace(".srt", "_output.json")}</font><br>'
             helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
             
-
-            helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
-            if total_blocks != total_seps:
-                txt_to_append = f"<font color='red'>The total number of translation blocks ({total_blocks}) doesn't match with the total number of inserted seperators ({total_seps}). This error will affect the reconstruction process</font><br>"
-                helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
-
     def reconstruct_srt_from_json(self):
         json_file = self.srtPrepLoadJsonTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         txt_file = self.srtPrepLoadTxtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         if json_file and txt_file:
-            sep = self.srtPrepSeperatorTextEdit.toPlainText()
-            res = prep_srt.reconstruct_srt_from_json_and_txt(json_file, txt_file, self.srtPrepFeedbackTextEdit, sep)
-            if res == 0:
-                txt_to_append = f"<font color='#014d6b'>Successfully reconstructed SRT from JSON and TXT.<br>Output saved to</font> <font color='#039169'>{txt_file.rsplit('.', 1)[0]+'_new.srt'}</font><br>"
+            prep_srt.reconstruct_srt_from_json_and_txt(json_file, txt_file, self.srtPrepFeedbackTextEdit)
+            txt_to_append = f"<font color='#014d6b'>Successfully reconstructed SRT from JSON and TXT.</font><br><font color='#014d6b'>Output saved to</font> <font color='#039169'>{txt_file.rsplit('.', 1)[0]+'_new.srt'}</font><br>"
+            helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+            if self.srtPrepDeleteJsonCheckBox.isChecked():
+                os.remove(json_file)
+                txt_to_append = f"<font color='#014d6b'>Successfully removed</font> <font color='#6b0101'>{json_file}</font>"
                 helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
-                if self.srtPrepDeleteJsonCheckBox.isChecked():
-                    os.remove(json_file)
-                    txt_to_append = f"<font color='#014d6b'>Successfully removed</font> <font color='#6b0101'>{json_file}</font>"
-                    helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
-                if self.srtPrepDeleteTxtCheckBox.isChecked():
-                    os.remove(txt_file)
-                    txt_to_append = f"<font color='#014d6b'>Successfully removed</font> <font color='#6b0101'> {txt_file}</font>"
-                    helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
+            if self.srtPrepDeleteTxtCheckBox.isChecked():
+                os.remove(txt_file)
+                txt_to_append = f"<font color='#014d6b'>Successfully removed</font> <font color='#6b0101'> {txt_file}</font>"
+                helper_functions.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
                 
 
 if __name__ == '__main__':
