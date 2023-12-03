@@ -134,6 +134,34 @@ def divide_text_with_weights(text, weights):
 
     return chunks
 
+def split_in_half(text):
+    if len(text) > 31:
+        mid_forward = len(text) // 2
+        mid_backward = len(text) // 2
+        mid = 0
+
+        # Search forward for a white space
+        while mid_forward < len(text) and not text[mid_forward].isspace():
+            mid_forward += 1
+
+        # Search backward for a white space
+        while mid_backward < len(text) and not text[mid_backward].isspace():
+            mid_backward -= 1
+
+        # check for the difference between character in the splitted lines (in both cases) and choose the smaller
+        diff_forward = len(text[:mid_forward].strip()) - len(text[mid_forward:].strip())
+        diff_backward = len(text[:mid_backward].strip()) - len(text[mid_backward:].strip())
+        if abs(diff_forward) >= abs(diff_backward):
+            mid = mid_backward
+        else:
+            mid = mid_forward
+
+        splitted_text = text[:mid].strip() + "\n" + text[mid:].strip()
+
+        return splitted_text
+    else:
+        return text
+
 def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, text_edit:object) -> None:
     # Load the JSON data
     with open(json_file_path, "r", encoding='utf-8') as json_file:
@@ -149,26 +177,8 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
 
     text_chuncks = divide_text_with_weights(text_content, weights)
     for text_block, json_entry in zip(text_chuncks, json_data_copy["entries"]):
+        text_block = split_in_half(text_block)
         json_entry["text"] = text_block.strip()
-
-    # for old_entry, new_entry in zip(json_data["entries"], json_data_copy["entries"]):
-    #     old_text = old_entry["text"]
-    #     new_text = new_entry["text"]
-    #     if '\n' in old_text.strip():
-    #         ratio = old_text.strip().split('\n')
-    #         ratio = len(ratio[0].split())
-    #         index = 0
-    #         tracker = 0
-    #         for i, letter in enumerate(new_text):
-    #             if letter == " ":
-    #                 tracker += 1
-    #                 index = i
-    #             if tracker == ratio:
-    #                 break
-    #         new_text_with_linebreak = new_text[:index]+"\n"+new_text[index+1:]
-    #         new_entry["text"] = new_text_with_linebreak
-
-
 
     srt_content = json_to_srt(json_data_copy)
 
