@@ -151,9 +151,6 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
     for text_block, json_entry in zip(text_chuncks, json_data_copy["entries"]):
         json_entry["text"] = text_block.strip()
 
-    with open("test.json", "w", encoding="utf-8") as f:
-        json.dump(json_data_copy, f)
-
     # for old_entry, new_entry in zip(json_data["entries"], json_data_copy["entries"]):
     #     old_text = old_entry["text"]
     #     new_text = new_entry["text"]
