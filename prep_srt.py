@@ -23,7 +23,7 @@ def srt_to_json(srt_file_path:str, text_len:int) -> None:
 
     for block in srt_blocks:
         # Extract block number, time code, and text using regex
-        match = re.match(r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+)', block, re.DOTALL)
+        match = re.match(r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{1,3}) --> (\d{2}:\d{2}:\d{2},\d{1,3})\n(.+)', block, re.DOTALL)
 
         if match:
             block_number, start_time, end_time, text = match.groups()
@@ -32,7 +32,7 @@ def srt_to_json(srt_file_path:str, text_len:int) -> None:
 
     for block in srt_blocks:
         # Extract block number, time code, and text using regex
-        match = re.match(r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+)', block, re.DOTALL)
+        match = re.match(r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{1,3}) --> (\d{2}:\d{2}:\d{2},\d{1,3})\n(.+)', block, re.DOTALL)
 
         if match:
             block_number, start_time, end_time, text = match.groups()
