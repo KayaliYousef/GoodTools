@@ -14,7 +14,7 @@ import srt_vtt_converter
 import prep_srt
 import helper_functions
 
-VERSION = "1.5.0"
+VERSION = "1.5.1"
 
 class UI(QMainWindow):
   # constructor
