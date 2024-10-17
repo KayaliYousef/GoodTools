@@ -14,7 +14,7 @@ import srt_vtt_converter
 import prep_srt
 import helper_functions
 
-VERSION = "1.5.1"
+VERSION = "1.5.2"
 
 class UI(QMainWindow):
   # constructor
@@ -216,6 +216,7 @@ class UI(QMainWindow):
         error_within_one_block = {}
         error_between_two_blocks = {}
         block_index_errors = {}
+        white_space_in_block_index_error = {}
         empty_row_errors = {}
         block_format_error = {}
         
@@ -224,6 +225,7 @@ class UI(QMainWindow):
             error_within_one_block.update({f"{file}":[]})
             error_between_two_blocks.update({f"{file}":[]})
             block_index_errors.update({f"{file}":[]})
+            white_space_in_block_index_error.update({f"{file}":[]})
             empty_row_errors.update({f"{file}":[]})
             block_format_error.update({f"{file}":[]})
             block_index = 0
@@ -274,6 +276,8 @@ class UI(QMainWindow):
                     block_index += 1
                     if int(line.strip()) != block_index:
                         block_index_errors[f"{file}"].append(block_index)
+                    if any(char == ' ' for char in line):
+                        white_space_in_block_index_error[f"{file}"].append(block_index)
 
             #* Find errors in empty rows
             for i in block_index_indexes:
@@ -290,8 +294,8 @@ class UI(QMainWindow):
 
         #? count will be greater that 0 if there were error in the srt files
         count = 0
-        for val1, val2, val3, val4, val5 in zip(error_within_one_block.values(), error_between_two_blocks.values(), block_index_errors.values(), empty_row_errors.values(), block_format_error.values()):
-            if val1 or val2 or val3 or val4 or val5: count += 1  
+        for val1, val2, val3, val4, val5, val6 in zip(error_within_one_block.values(), error_between_two_blocks.values(), block_index_errors.values(), white_space_in_block_index_error.values(), empty_row_errors.values(), block_format_error.values()):
+            if val1 or val2 or val3 or val4 or val5 or val6: count += 1  
 
         #* No errors were found  
         if count == 0:
@@ -302,7 +306,7 @@ class UI(QMainWindow):
             self.checkSequenceFeedbackTextEdit.setHtml("<font color='#116b01'>Color Codes:</font><br><font color='#6b0101'>File name; </font><font color='#ff8000'>Timing error within the same block; </font><font color='#014d6b'>Timing error between two blocks; </font><font color='#039169'>Block index error; </font><font color='#6b4401'>Empty/Extra row error; </font><font color='#690391'>Timecode format error.</font>")
             
             for file in srt_files:
-                if error_within_one_block[f"{file}"] or error_between_two_blocks[f"{file}"] or block_index_errors[f"{file}"] or empty_row_errors[f"{file}"] or block_format_error[f"{file}"]:
+                if error_within_one_block[f"{file}"] or error_between_two_blocks[f"{file}"] or block_index_errors[f"{file}"] or white_space_in_block_index_error[f"{file}"] or empty_row_errors[f"{file}"] or block_format_error[f"{file}"]:
                     temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
                     temp_text = f"{temp_text}<br><font color='#6b0101'><u>{file}</u></font>"
                     self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
@@ -324,6 +328,16 @@ class UI(QMainWindow):
                         temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#039169'>Block Index {error} is wrong or missing</font>"
                         self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                #* Errors in block index (white spaces)
+                if white_space_in_block_index_error[f"{file}"]:
+                    errors = white_space_in_block_index_error[f"{file}"]
+                    errors = [str(error) for error in errors]
+                    temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                    if len(errors) == 1:
+                        temp_text = f"{temp_text}<font color='#039169'>Extra white space at Block Index {errors[0]}</font>"
+                    else:
+                        temp_text = f"{temp_text}<font color='#039169'>Extra white spaces at Block Indices: {','.join(errors)}</font>"
+                    self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
                 # * Missing empty rows
                 if empty_row_errors[f"{file}"]:
                     for error in empty_row_errors[f"{file}"]:

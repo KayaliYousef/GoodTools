@@ -9,7 +9,11 @@ def srt_to_json(srt_file_path:str, text_len:int) -> None:
     # Read the SRT file
 
     with open(srt_file_path, 'r', encoding='utf-8') as file:
-        srt_content = file.read()
+        srt_content = file.readlines()
+
+    # make sure the the srt lines don't have extry white spaces after each line
+    srt_content = [line.strip() for line in srt_content]
+    srt_content = "\n".join(srt_content)
 
     # Split the content into blocks based on the blank lines
     srt_blocks = re.split(r'\n\s*\n', srt_content.strip())

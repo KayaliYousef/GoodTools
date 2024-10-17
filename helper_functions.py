@@ -29,7 +29,7 @@ def clean_srt(srt_file_path:str) -> str:
     cleaned_lines = [line for line in cleaned_lines if line.strip()]
     return '\n'.join(cleaned_lines)
 
-def convert_timecode_to_milisec(timecode:str) -> (int, int):
+def convert_timecode_to_milisec(timecode:str) -> tuple[int, int]:
     start, end = timecode.split("-->")
     #* hours, minutes seconds and miliseconds
     h_start, m_start, s_start = start.split(":")
