@@ -207,6 +207,15 @@ class UI(QMainWindow):
                 self.validateFeedbackTextEdit.setHtml(temp_text)
 
     """Check Sequence Tab"""
+    def clean_extra_white_spaces(self, srt_file:str):
+        lines = []
+        with open(srt_file, "r", encoding='utf-8') as f:
+            lines = f.readlines()
+            lines = [line.strip() for line in lines]
+        with open(srt_file, "w", encoding='utf-8') as f:
+            for line in lines:
+                f.write(f"{line}\n")
+
     def check_timecode_sequence(self):
         srt_files = helper_functions.get_files("srt")
         if not len(srt_files):
@@ -337,6 +346,10 @@ class UI(QMainWindow):
                         temp_text = f"{temp_text}<font color='#039169'>Extra white space at Block Index {errors[0]}</font>"
                     else:
                         temp_text = f"{temp_text}<font color='#039169'>Extra white spaces at Block Indices: {','.join(errors)}</font>"
+                    self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                    self.clean_extra_white_spaces(file)
+                    temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                    temp_text = f"{temp_text}<font color='green'>Cleaned white spaces from file: {file}</font>"
                     self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
                 # * Missing empty rows
                 if empty_row_errors[f"{file}"]:
