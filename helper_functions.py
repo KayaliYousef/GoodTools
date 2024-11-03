@@ -29,7 +29,7 @@ def clean_srt(srt_file_path:str) -> str:
     cleaned_lines = [line for line in cleaned_lines if line.strip()]
     return '\n'.join(cleaned_lines)
 
-def convert_timecode_to_milisec(timecode:str) -> tuple[int, int]:
+def convert_timecode_to_millisec(timecode:str) -> tuple[int, int]:
     start, end = timecode.split("-->")
     #* hours, minutes seconds and miliseconds
     h_start, m_start, s_start = start.split(":")
@@ -42,6 +42,14 @@ def convert_timecode_to_milisec(timecode:str) -> tuple[int, int]:
     start = int(h_start) * 3600000 + int(m_start) * 60000 + int(s_start) * 1000 + int(ms_start)
     end = int(h_end) * 3600000 + int(m_end) * 60000 + int(s_end) * 1000 + int(ms_end)
     return start, end
+
+def convert_millisec_to_timecode(milliseconds: int) -> str:
+    hours = milliseconds // 3600000
+    minutes = (milliseconds // 60000) % 60
+    seconds = (milliseconds // 1000) % 60
+    milliseconds_remainder = milliseconds % 1000
+    return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds_remainder:03}"
+
 
 # function to cenvert srt to plain text removing the line breaks and adding new line breaks after every dot
 def srt_to_plaintext(srt_file_path:str, output_in_input_path=False) -> str:

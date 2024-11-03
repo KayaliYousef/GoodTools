@@ -12,6 +12,7 @@ import convention_validator as cv
 import sort
 import srt_vtt_converter
 import prep_srt
+import correct_intersected_srt
 import helper_functions
 
 VERSION = "1.5.2"
@@ -254,7 +255,7 @@ class UI(QMainWindow):
                     block_format_error[f"{file}"].append(line)
                     continue
                 try:
-                    start, end = helper_functions.convert_timecode_to_milisec(line)
+                    start, end = helper_functions.convert_timecode_to_millisec(line)
                     if start > end:
                         error_within_one_block[f"{file}"].append(line)
                 except:
@@ -262,13 +263,13 @@ class UI(QMainWindow):
 
             for i in range(len(srt_timecodes) - 1):
                 try:
-                    _, current_block_end = helper_functions.convert_timecode_to_milisec(srt_timecodes[i])
+                    _, current_block_end = helper_functions.convert_timecode_to_millisec(srt_timecodes[i])
                 except:
                     if not srt_timecodes[i] in block_format_error[f"{file}"]:
                         block_format_error[f"{file}"].append(srt_timecodes[i])
                     continue
                 try:
-                    next_block_start, _ = helper_functions.convert_timecode_to_milisec(srt_timecodes[i + 1])
+                    next_block_start, _ = helper_functions.convert_timecode_to_millisec(srt_timecodes[i + 1])
                 except:
                     if not srt_timecodes[i + 1] in block_format_error[f"{file}"]:
                         block_format_error[f"{file}"].append(srt_timecodes[i + 1])
@@ -301,7 +302,7 @@ class UI(QMainWindow):
                 if srt_contents_lines[i+2] == "\n":
                     empty_row_errors[f"{file}"].append(f"Extra row at line {i+3}")
 
-        #? count will be greater that 0 if there were error in the srt files
+        #? count will be greater than 0 if there were error in the srt files
         count = 0
         for val1, val2, val3, val4, val5, val6 in zip(error_within_one_block.values(), error_between_two_blocks.values(), block_index_errors.values(), white_space_in_block_index_error.values(), empty_row_errors.values(), block_format_error.values()):
             if val1 or val2 or val3 or val4 or val5 or val6: count += 1  
@@ -321,16 +322,23 @@ class UI(QMainWindow):
                     self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
                 #* Errors within one block
                 if error_within_one_block[f"{file}"]:
+                    print("Error within the same block")
                     for error in error_within_one_block[f"{file}"]:
                         temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#ff8000'>{error}</font>"
                         self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
                 #* Errors between two blocks
                 if error_between_two_blocks[f"{file}"]:
+                    print("Error between two blocks")
                     for i in range(0, len(error_between_two_blocks[f"{file}"]) - 1, 2):
                         temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#014d6b'>{error_between_two_blocks[f'{file}'][i]} ---- {error_between_two_blocks[f'{file}'][i + 1]}</font>"
                         self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                    correct_intersected_srt.correct_intersected_blocks(file)
+                    temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                    temp_text = f"{temp_text}<font color='green'>Corrected intersection between timeblocks for file: {file}</font>"
+                    self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                    
                 #* Errors in block index
                 if block_index_errors[f"{file}"]:
                     for error in block_index_errors[f"{file}"]:
