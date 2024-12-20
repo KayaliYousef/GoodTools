@@ -27,20 +27,27 @@ def clean_srt(srt_file_path:str) -> str:
     cleaned_lines = [line for line in text if not (line.strip().isdigit() or '-->' in line)]
     # remove empty lines
     cleaned_lines = [line for line in cleaned_lines if line.strip()]
-    return '\n'.join(cleaned_lines)
+    return ''.join(cleaned_lines)
+
+def convert_time_string_to_millisec(time_string:str):
+    """
+    Convert only one part of the timecode to millisec, Example: "00:04:12,715" --> "252715 ms"
+    """
+    # hours, minutes seconds and miliseconds
+    h, m, s = time_string.split(":")
+    # seconds and miliseocnds
+    s, ms = s.split(",")
+
+    return int(h) * 3600000 + int(m) * 60000 + int(s) * 1000 + int(ms)
+
 
 def convert_timecode_to_millisec(timecode:str) -> tuple[int, int]:
+    """
+    Convert timecode stirng to millisec, Example: "00:04:11,878 --> 00:04:12,715" --> (251878, 252715) ms
+    """
     start, end = timecode.split("-->")
-    #* hours, minutes seconds and miliseconds
-    h_start, m_start, s_start = start.split(":")
-    #* seconds and miliseocnds
-    s_start, ms_start = s_start.split(",")
-    #* hours, minutes seconds and miliseconds
-    h_end, m_end, s_end = end.split(":")
-    #* seconds and miliseocnds
-    s_end, ms_end = s_end.split(",")
-    start = int(h_start) * 3600000 + int(m_start) * 60000 + int(s_start) * 1000 + int(ms_start)
-    end = int(h_end) * 3600000 + int(m_end) * 60000 + int(s_end) * 1000 + int(ms_end)
+    start = convert_time_string_to_millisec(start)
+    end = convert_time_string_to_millisec(end)
     return start, end
 
 def convert_millisec_to_timecode(milliseconds: int) -> str:
