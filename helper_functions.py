@@ -51,6 +51,8 @@ def convert_timecode_to_millisec(timecode:str) -> tuple[int, int]:
     return start, end
 
 def convert_millisec_to_timecode(milliseconds: int) -> str:
+    if not isinstance(milliseconds, int):
+        raise TypeError(f"milliseconds must be integer")
     hours = milliseconds // 3600000
     minutes = (milliseconds // 60000) % 60
     seconds = (milliseconds // 1000) % 60
