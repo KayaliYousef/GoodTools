@@ -146,8 +146,8 @@ def divide_text_with_weights(text, weights):
 
     return chunks
 
-def split_in_half(text):
-    if len(text) > 33:
+def split_in_half(text, max_char_per_line=33):
+    if len(text) > max_char_per_line:
         mid_forward = len(text) // 2
         mid_backward = len(text) // 2
         mid = 0

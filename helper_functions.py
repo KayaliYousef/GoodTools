@@ -260,6 +260,7 @@ def find_first_breaker(text: str, breakers: list) -> tuple[int, str]:
     Finds the first occurrence of a breaker in the text.
     If the breaker is a dot the following two characters of the breaker will be checked as well in case they are also dots ('...' case).
     If the breaker is a question mark the following character will be searched in case the character is another question mark or an exclamation mark ('??' or '?! case)
+    If the breaker is a dot or a comma we check the character after the break, if the character is a digit we ignore this breaker (15.000 or 15,000)
     
         Parameters:
             text (str): Text to be searched for a breaker
@@ -275,7 +276,9 @@ def find_first_breaker(text: str, breakers: list) -> tuple[int, str]:
     for i, char in enumerate(text):
         if char in breakers:
             # Handle specific cases
-            if char == '.' and i + 2 < len(text) and text[i + 1:i + 3] == '..':
+            if char == '.' or char == ',' and text[i + 1].isdigit() and text[i - 1].isdigit():
+                continue
+            elif char == '.' and i + 2 < len(text) and text[i + 1:i + 3] == '..':
                 return i + 2, '...'
             elif char == '?' and i + 1 < len(text):
                 if text[i + 1] in ['!', '?']:
@@ -306,7 +309,7 @@ def split_text_by_index(text: str, index: int) -> tuple[str, str]:
             >>> split_text_by_index("hello world", 4)
             ('hello', ' world')
     """
-    return text[:index + 1], text[index + 1:]
+    return text[:index + 1].strip() , text[index + 1:].strip()
 
 def split_text_by_whitespace(text: str, max_index: int):
     """
