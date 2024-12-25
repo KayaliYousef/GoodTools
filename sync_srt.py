@@ -4,8 +4,8 @@ import helper_functions as hf
 
 # Constants
 BREAKERS = [".", ",", "?", ":", "!"]
-MAX_CHAR_PER_LINE = 25
-MIN_CHAR_PER_LINE = 15
+MAX_CHAR_PER_LINE = 27
+MIN_CHAR_PER_LINE = 23
 
 def search_chunk_in_parts(text_chunk: str, text: str, entry: dict, 
                         entry_index: int, json_entries: list[dict], forward_search: bool) -> str | None:
@@ -27,12 +27,12 @@ def search_chunk_in_parts(text_chunk: str, text: str, entry: dict,
         Returns:
             str or None: SRT timecode with the format "hh:mm:ss,ms --> hh:mm:ss,ms" or None if search has failed
     """
-    def get_part_and_index(text_chunk: str, forward_search: bool, part_len: int) -> tuple[str, int]:
+    def get_part_and_index(text_chunk: str, text: str, forward_search: bool, part_len: int) -> tuple[str, int]:
         """
         Get the part of the chunk and its start index in the text.
 
             Notes:
-                - This function is called inside a for loop where part_len is a part of the text_chunk that if getting progressively samller by removing characters from the right or left of the text_chunk according to the search direction (forward or backward)
+                - This function is called inside a for loop where part_len is an index in a for loop that splits the text_chunk progressively samller by removing characters from the right or left according to the search direction (forward or backward)
         """
         part = text_chunk[part_len:] if forward_search else text_chunk[:part_len]
         return part, text.find(part)
@@ -112,15 +112,15 @@ def search_chunk_in_parts(text_chunk: str, text: str, entry: dict,
     loop = range(len(text_chunk)) if forward_search else range(len(text_chunk), 0, -1)
 
     for part_len in loop:
-        part, start_index = get_part_and_index(text_chunk, forward_search, part_len)
+        part, start_index = get_part_and_index(text_chunk, text, forward_search, part_len)
         if start_index == -1:
             continue
-
+        
         if (forward_search and start_index == 0) or (not forward_search and start_index + len(part) == len(text)):
             timecode_start, timecode_end, remaining_chunk = calculate_timecodes(entry, part, text_chunk, part_len, forward_search)
-            result = handle_remaining_chunk(remaining_chunk, json_entries, entry_index, forward_search, timecode_start, timecode_end)
-            if result:
-                return result
+            timecod = handle_remaining_chunk(remaining_chunk, json_entries, entry_index, forward_search, timecode_start, timecode_end)
+            if timecod:
+                return timecod
 
     return None
 
@@ -207,7 +207,10 @@ def calculate_timecodes_across_blocks(text_chunk: str, current_index: int, json_
         return f"{timecode_start} --> {timecode_end}"
 
 def process_remaining_text(json_entries: list[dict], current_index: int, text_found: str, 
-                            text_chunk, search_forward):
+                            text_chunk: str, search_forward: bool) -> str:
+    """
+    This function is a helper for the function calculate_timecodes_across_blocks which handles the case where the text is contained in the chunk, in this function
+    """
     timecode = None
     if search_forward:
         search_index = 1
@@ -361,46 +364,41 @@ json_data = srt_to_json("input.srt", save_json=False)
 entries = json_data.get('entries', [])
 text = ' '.join(line.strip() for line in hf.clean_srt("input.srt").splitlines())
 output_srt_list = []
-
+prints = 0
 block_number = 1
 while text:
     # find first occurance of a breaker in the current text
     index, breaker = hf.find_first_breaker(text, BREAKERS)
 
     # split the text at the found breaker
-    text_until_breaker, rest_of_text = hf.split_text_by_index(text, index)
-    # text after breaker is the new text
-    text = rest_of_text.strip()
+    text_until_breaker, text = hf.split_text_by_index(text, index)
 
-    # if text until breaker is too short, keep taking chunk form the rest of the text unitl text_until_breaker larger than threshold
-    while len(text_until_breaker) < MIN_CHAR_PER_LINE:
+
+    # if text until breaker is too short, keep taking chunk form the rest of the text unitl text_until_breaker is larger than threshold
+    while len(text_until_breaker) <= MIN_CHAR_PER_LINE * 2 and len(text) > 0:
         index, breaker = hf.find_first_breaker(text, BREAKERS)
         next_chunk, text = hf.split_text_by_index(text, index)
-        text_until_breaker += " " + next_chunk.strip()
+        text_until_breaker += next_chunk
 
-    # text until breaker fits in a single line
-    if len(text_until_breaker) <= MAX_CHAR_PER_LINE:
+    
+    # text until breaker fits in two lines
+    if len(text_until_breaker) <= MAX_CHAR_PER_LINE * 2:
+        line1, line2, extra_text = hf.split_text_with_max_char(text_until_breaker, MAX_CHAR_PER_LINE)
         output_srt_list.append({
             "block_number": block_number,
             "time_code": None,
-            "text": text_until_breaker.strip(),
-        })
-    # text until breaker should be fitted in two lines
-    elif len(text_until_breaker) <= MAX_CHAR_PER_LINE * 2:
-        output_srt_list.append({
-            "block_number": block_number,
-            "time_code": None,
-            "text": split_in_half(text_until_breaker, MAX_CHAR_PER_LINE),
+            "text": f"{line1}\n{line2}",
         })
     # text until breaker doesn't fit in two lines so we fill two lines and append the rest to the rest of the text 
     else:
         part1, part2 = hf.split_text_by_whitespace(text_until_breaker, MAX_CHAR_PER_LINE * 2)
+        line1, line2, extra_text = hf.split_text_with_max_char(part1, MAX_CHAR_PER_LINE)
+        text = extra_text + " " + part2 + text
         output_srt_list.append({
             "block_number": block_number,
             "time_code": None,
-            "text": split_in_half(part1, MAX_CHAR_PER_LINE),
+            "text": f"{line1}\n{line2}",
         })
-        text = part2.strip() + " " + text.strip()
 
     block_number += 1
 

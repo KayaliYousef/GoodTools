@@ -309,11 +309,11 @@ def split_text_by_index(text: str, index: int) -> tuple[str, str]:
             >>> split_text_by_index("hello world", 4)
             ('hello', ' world')
     """
-    return text[:index + 1].strip() , text[index + 1:].strip()
+    return text[:index + 1] , text[index + 1:]
 
 def split_text_by_whitespace(text: str, max_index: int):
     """
-    Splits the text at a given if the text at the index is a whitespace, otherwise start a search for the first occurance of a whitespace left to the given index.
+    Splits the text at a given index if the text at the index is a whitespace, otherwise start a search for the first occurance of a whitespace left to the given index.
     
         Parameters:
             text (str): The input string to be split
@@ -348,3 +348,25 @@ def calculate_timecode_by_ratio(timecode_duration, full_text, text_chunk):
             625
     """
     return int(len(text_chunk) / len(full_text) * timecode_duration)
+
+def split_text_with_max_char(text, max_char_per_line):
+    def find_split_index(s):
+        """Find the index to split the text at the nearest whitespace."""
+        if len(s) <= max_char_per_line:
+            return len(s)
+        for i in range(max_char_per_line, 0, -1):
+            if s[i].isspace():
+                return i
+        return max_char_per_line  # In case no whitespace is found
+
+    # Find split for the first line
+    split_index = find_split_index(text)
+    line_one = text[:split_index].strip()
+    remaining_text = text[split_index:].strip()
+
+    # Find split for the second line
+    split_index = find_split_index(remaining_text)
+    line_two = remaining_text[:split_index].strip()
+    remaining_text = remaining_text[split_index:].strip()
+
+    return line_one, line_two, remaining_text
