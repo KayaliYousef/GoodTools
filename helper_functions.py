@@ -221,6 +221,8 @@ def sub_srt_codes(srt_file_path:str, output_in_input_path=False) -> int:
     text = [line.strip() for line in text]
     # rejoin the text back together with white spaces between lines
     text = ' '.join(text)
+    if text[-1] != '.':
+        text += '.'
 
     # splitting the text into lines with maximum length of 5000 characters
     new_text = ""
