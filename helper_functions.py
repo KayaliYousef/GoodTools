@@ -349,24 +349,54 @@ def calculate_timecode_by_ratio(timecode_duration, full_text, text_chunk):
     """
     return int(len(text_chunk) / len(full_text) * timecode_duration)
 
-def split_text_with_max_char(text, max_char_per_line):
-    def find_split_index(s):
-        """Find the index to split the text at the nearest whitespace."""
-        if len(s) <= max_char_per_line:
-            return len(s)
-        for i in range(max_char_per_line, 0, -1):
-            if s[i].isspace():
+def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_at_breaker, breakers):
+
+    def find_split_index(text, max_char_per_line, min_char_per_line, split_at_breaker, breakers=None):
+        """
+        Finds the index at which the given text should be split into two lines.
+
+        Parameters:
+            text (str): The input text to split.
+            max_char_per_line (int): The maximum number of characters per line.
+            split_at_breaker (bool): If True, prioritize splitting at breakers.
+            breakers (set or list, optional): Set or list of breaker characters.
+
+        Returns:
+            int: The index at which to split the text.
+        """
+        if breakers is None:
+            breakers = {'.', ',', ':', '?', '!'}
+        else:
+            breakers = set(breakers)
+        
+        # Ensure max_char_per_line does not exceed the text length
+        max_char_per_line = min(max_char_per_line, len(text) - 1)
+        if len(text) <= min_char_per_line:
+            return len(text)
+        # Look for a breaker from the right, starting from max_char_per_line
+        if split_at_breaker:
+            for i in range(max_char_per_line, min_char_per_line -1, -1):
+                if text[i] in breakers and not text[i+1].isdigit():
+                    return i + 1  # Include the breaker in the split
+
+        # If no breaker is found, look for whitespace from the right
+        for i in range(max_char_per_line, -1, -1):
+            if text[i].isspace():
                 return i
-        return max_char_per_line  # In case no whitespace is found
+
+        # If no whitespace is found, return max_char_per_line
+        return max_char_per_line
 
     # Find split for the first line
-    split_index = find_split_index(text)
+    split_index = find_split_index(text, max_char_per_line, min_char_per_line, True, breakers)
     line_one = text[:split_index]
     remaining_text = text[split_index:]
 
     # Find split for the second line
-    split_index = find_split_index(remaining_text)
+    split_index = find_split_index(remaining_text, max_char_per_line, min_char_per_line, split_at_breaker, breakers)
     line_two = remaining_text[:split_index]
     remaining_text = remaining_text[split_index:]
 
     return line_one, line_two, remaining_text
+
+

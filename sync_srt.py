@@ -6,7 +6,7 @@ import helper_functions as hf
 BREAKERS = [".", ",", "?", ":", "!"]
 MAX_CHAR_PER_LINE = 30
 MIN_CHAR_PER_LINE = 20
-SPLIT_LINE_BY_BREAKER = True
+SPLIT_AT_BREAKER = False
 
 def search_chunk_in_parts(text_chunk: str, text: str, entry: dict, 
                         entry_index: int, json_entries: list[dict], forward_search: bool) -> str | None:
@@ -371,40 +371,18 @@ text = ' '.join(line.strip() for line in hf.clean_srt("input.srt").splitlines())
 output_srt_list = []
 block_number = 1
 
+
 while text:
-    # find first occurance of a breaker in the current text
-    index, breaker = hf.find_first_breaker(text, BREAKERS)
 
-    # split the text at the found breaker
-    text_until_breaker, text = hf.split_text_by_index(text, index)
+    # part1, part2 = hf.split_text_by_whitespace(text, MAX_CHAR_PER_LINE * 5)
+    line1, line2, extra_text = hf.split_text_with_max_char(text, MAX_CHAR_PER_LINE, MIN_CHAR_PER_LINE, SPLIT_AT_BREAKER, BREAKERS)
 
-
-    # if text until breaker is too short, keep taking chunk form the rest of the text unitl text_until_breaker is larger than threshold
-    while len(text_until_breaker) <= MIN_CHAR_PER_LINE * 2 and len(text) > 0:
-        index, breaker = hf.find_first_breaker(text, BREAKERS)
-        next_chunk, text = hf.split_text_by_index(text, index)
-        text_until_breaker += next_chunk
-
-    
-    # text until breaker fits in two lines
-    if len(text_until_breaker) <= MAX_CHAR_PER_LINE * 2:
-        line1, line2, extra_text = hf.split_text_with_max_char(text_until_breaker, MAX_CHAR_PER_LINE)
-        text = extra_text + text
-        output_srt_list.append({
-            "block_number": block_number,
-            "time_code": None,
-            "text": f"{line1.strip()}\n{line2.strip()}",
-        })
-    # text until breaker doesn't fit in two lines so we fill two lines and append the rest to the rest of the text 
-    else:
-        part1, part2 = hf.split_text_by_whitespace(text_until_breaker, MAX_CHAR_PER_LINE * 2)
-        line1, line2, extra_text = hf.split_text_with_max_char(part1, MAX_CHAR_PER_LINE)
-        text = extra_text + part2 + text
-        output_srt_list.append({
-            "block_number": block_number,
-            "time_code": None,
-            "text": f"{line1.strip()}\n{line2.strip()}",
-        })
+    text = extra_text
+    output_srt_list.append({
+        "block_number": block_number,
+        "time_code": None,
+        "text": f"{line1.strip()}\n{line2.strip()}",
+    })
 
     block_number += 1
 
