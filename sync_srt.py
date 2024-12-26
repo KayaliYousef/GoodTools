@@ -1,11 +1,12 @@
-from prep_srt import srt_to_json, split_in_half
+from prep_srt import srt_to_json
 from correct_intersected_srt import correct_intersected_blocks
 import helper_functions as hf
 
 # Constants
 BREAKERS = [".", ",", "?", ":", "!"]
-MAX_CHAR_PER_LINE = 27
-MIN_CHAR_PER_LINE = 23
+MAX_CHAR_PER_LINE = 30
+MIN_CHAR_PER_LINE = 20
+SPLIT_LINE_BY_BREAKER = True
 
 def search_chunk_in_parts(text_chunk: str, text: str, entry: dict, 
                         entry_index: int, json_entries: list[dict], forward_search: bool) -> str | None:
@@ -279,6 +280,10 @@ def find_chunk_timecode(text_chunk: str, json_entries: list[dict], current_time:
     # iterate over all entries
     for entry_index, entry in enumerate(json_entries):
         text = entry.get('text', '').replace("\n", " ").strip()
+        entry_time_end = entry.get('time_code_end')
+        entry_time_end_in_ms = hf.convert_time_string_to_millisec(entry_time_end)
+        if current_time > entry_time_end_in_ms:
+            continue
         if not text:
             continue
 
@@ -364,8 +369,8 @@ json_data = srt_to_json("input.srt", save_json=False)
 entries = json_data.get('entries', [])
 text = ' '.join(line.strip() for line in hf.clean_srt("input.srt").splitlines())
 output_srt_list = []
-prints = 0
 block_number = 1
+
 while text:
     # find first occurance of a breaker in the current text
     index, breaker = hf.find_first_breaker(text, BREAKERS)
@@ -384,20 +389,21 @@ while text:
     # text until breaker fits in two lines
     if len(text_until_breaker) <= MAX_CHAR_PER_LINE * 2:
         line1, line2, extra_text = hf.split_text_with_max_char(text_until_breaker, MAX_CHAR_PER_LINE)
+        text = extra_text + text
         output_srt_list.append({
             "block_number": block_number,
             "time_code": None,
-            "text": f"{line1}\n{line2}",
+            "text": f"{line1.strip()}\n{line2.strip()}",
         })
     # text until breaker doesn't fit in two lines so we fill two lines and append the rest to the rest of the text 
     else:
         part1, part2 = hf.split_text_by_whitespace(text_until_breaker, MAX_CHAR_PER_LINE * 2)
         line1, line2, extra_text = hf.split_text_with_max_char(part1, MAX_CHAR_PER_LINE)
-        text = extra_text + " " + part2 + text
+        text = extra_text + part2 + text
         output_srt_list.append({
             "block_number": block_number,
             "time_code": None,
-            "text": f"{line1}\n{line2}",
+            "text": f"{line1.strip()}\n{line2.strip()}",
         })
 
     block_number += 1

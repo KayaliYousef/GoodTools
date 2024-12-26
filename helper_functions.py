@@ -331,7 +331,7 @@ def split_text_by_whitespace(text: str, max_index: int):
 
     """
     whitespace_index = text[:max_index].rfind(' ')
-    return text[:whitespace_index], text[whitespace_index + 1:]
+    return text[:whitespace_index], text[whitespace_index:]
 
 def calculate_timecode_by_ratio(timecode_duration, full_text, text_chunk):
     """
@@ -361,12 +361,12 @@ def split_text_with_max_char(text, max_char_per_line):
 
     # Find split for the first line
     split_index = find_split_index(text)
-    line_one = text[:split_index].strip()
-    remaining_text = text[split_index:].strip()
+    line_one = text[:split_index]
+    remaining_text = text[split_index:]
 
     # Find split for the second line
     split_index = find_split_index(remaining_text)
-    line_two = remaining_text[:split_index].strip()
-    remaining_text = remaining_text[split_index:].strip()
+    line_two = remaining_text[:split_index]
+    remaining_text = remaining_text[split_index:]
 
     return line_one, line_two, remaining_text
