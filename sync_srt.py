@@ -1,12 +1,11 @@
 from prep_srt import srt_to_json
-from correct_intersected_srt import correct_intersected_blocks
 import helper_functions as hf
 
-# Constants
-BREAKERS = [".", ",", "?", ":", "!"]
-MAX_CHAR_PER_LINE = 30
-MIN_CHAR_PER_LINE = 20
-SPLIT_AT_BREAKER = False
+# # Constants
+# BREAKERS = [".", ",", "?", ":", "!"]
+# MAX_CHAR_PER_LINE = 30
+# MIN_CHAR_PER_LINE = 20
+# SPLIT_AT_BREAKER = True
 
 def search_chunk_in_parts(text_chunk: str, text: str, entry: dict, 
                         entry_index: int, json_entries: list[dict], forward_search: bool) -> str | None:
@@ -363,36 +362,35 @@ def find_chunk_timecode(text_chunk: str, json_entries: list[dict], current_time:
                     
     return None  # Fallback for unmatched chunks
 
+def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations):
+    # Main Processing
+    json_data = srt_to_json(srt_flie, save_json=False)
+    entries = json_data.get('entries', [])
+    text = ' '.join(line.strip() for line in hf.clean_srt(srt_flie).splitlines())
+    output_srt_list = []
+    block_number = 1
 
-# Main Processing
-json_data = srt_to_json("input.srt", save_json=False)
-entries = json_data.get('entries', [])
-text = ' '.join(line.strip() for line in hf.clean_srt("input.srt").splitlines())
-output_srt_list = []
-block_number = 1
 
+    while text:
+        line1, line2, extra_text = hf.split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
 
-while text:
+        text = extra_text
+        output_srt_list.append({
+            "block_number": block_number,
+            "time_code": None,
+            "text": f"{line1.strip()}\n{line2.strip()}",
+        })
 
-    # part1, part2 = hf.split_text_by_whitespace(text, MAX_CHAR_PER_LINE * 5)
-    line1, line2, extra_text = hf.split_text_with_max_char(text, MAX_CHAR_PER_LINE, MIN_CHAR_PER_LINE, SPLIT_AT_BREAKER, BREAKERS)
+        block_number += 1
 
-    text = extra_text
-    output_srt_list.append({
-        "block_number": block_number,
-        "time_code": None,
-        "text": f"{line1.strip()}\n{line2.strip()}",
-    })
+    current_time = 0
+    for output in output_srt_list:
+        if output["time_code"] is None:
+            text_chunk = output['text'].replace("\n", " ").strip()
+            output["time_code"], current_time = find_chunk_timecode(text_chunk, entries, current_time)
 
-    block_number += 1
-
-current_time = 0
-for output in output_srt_list:
-    if output["time_code"] is None:
-        text_chunk = output['text'].replace("\n", " ").strip()
-        output["time_code"], current_time = find_chunk_timecode(text_chunk, entries, current_time)
-
-with open("output.srt", "w", encoding='utf-8') as f:
-    for block in output_srt_list:
-        f.write(f"{block['block_number']}\n{block['time_code']}\n{block['text']}\n\n")
+    output_name = srt_flie.rsplit(".", 1)[0] + "_out.srt"
+    with open(output_name, "w", encoding='utf-8') as f:
+        for block in output_srt_list:
+            f.write(f"{block['block_number']}\n{block['time_code']}\n{block['text']}\n\n")
 

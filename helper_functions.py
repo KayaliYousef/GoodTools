@@ -205,6 +205,7 @@ def sub_srt_codes(srt_file_path:str, output_in_input_path=False) -> int:
             int: The length of the output text after converting to plain text and splitting into chuncks
             
     """
+    added_dot_at_end = False
     path = re.sub(r"\\", "/", srt_file_path)
     with open(path, 'r', encoding="utf-8") as f:
         text = f.read()
@@ -221,8 +222,10 @@ def sub_srt_codes(srt_file_path:str, output_in_input_path=False) -> int:
     text = [line.strip() for line in text]
     # rejoin the text back together with white spaces between lines
     text = ' '.join(text)
+
     if text[-1] != '.':
         text += '.'
+        added_dot_at_end = True
 
     # splitting the text into lines with maximum length of 5000 characters
     new_text = ""
@@ -244,6 +247,9 @@ def sub_srt_codes(srt_file_path:str, output_in_input_path=False) -> int:
         if tracker < max_number_of_characters and i == len(text)-1:
             text_chunk = text[marker:].strip()
             new_text += text_chunk
+
+    if added_dot_at_end:
+        new_text = re.sub(r"\.(?!.*\.)", "", new_text)
         
     # output should be saved where the input file is located
     if output_in_input_path:
@@ -257,26 +263,26 @@ def sub_srt_codes(srt_file_path:str, output_in_input_path=False) -> int:
     return len(new_text)
 
 
-def find_first_breaker(text: str, breakers: list) -> tuple[int, str]:
+def find_first_punctuation(text: str, punctuations: list) -> tuple[int, str]:
     """
-    Finds the first occurrence of a breaker in the text.
-    If the breaker is a dot the following two characters of the breaker will be checked as well in case they are also dots ('...' case).
-    If the breaker is a question mark the following character will be searched in case the character is another question mark or an exclamation mark ('??' or '?! case)
-    If the breaker is a dot or a comma we check the character after the break, if the character is a digit we ignore this breaker (15.000 or 15,000)
+    Finds the first occurrence of a punctuation in the text.
+    If the punctuation is a dot the following two characters of the punctuation will be checked as well in case they are also dots ('...' case).
+    If the punctuation is a question mark the following character will be searched in case the character is another question mark or an exclamation mark ('??' or '?! case)
+    If the punctuation is a dot or a comma we check the character after the break, if the character is a digit we ignore this punctuation (15.000 or 15,000)
     
         Parameters:
-            text (str): Text to be searched for a breaker
-            breakers (list): List of breakers such as ['.', ',', ':'] to be searched for in the text
+            text (str): Text to be searched for a punctuation
+            punctuations (list): List of punctuations such as ['.', ',', ':'] to be searched for in the text
 
         Returns:
-            tuple(int, str): The index of the breaker found in the text and the breaker it self
+            tuple(int, str): The index of the punctuation found in the text and the punctuation it self
 
         Example:
-            >>> find_first_breaker("Hello, world", ['.', ',', ':', '?', '!'])
+            >>> find_first_punctuation("Hello, world", ['.', ',', ':', '?', '!'])
             (5, ',')
     """
     for i, char in enumerate(text):
-        if char in breakers:
+        if char in punctuations:
             # Handle specific cases
             if char == '.' or char == ',' and text[i + 1].isdigit() and text[i - 1].isdigit():
                 continue
@@ -286,7 +292,7 @@ def find_first_breaker(text: str, breakers: list) -> tuple[int, str]:
                 if text[i + 1] in ['!', '?']:
                     return i + 1, text[i + 1]
             return i, char
-    return len(text) - 1, ''  # Default to end of text if no breaker found
+    return len(text) - 1, ''  # Default to end of text if no punctuation found
 
 def split_text_by_index(text: str, index: int) -> tuple[str, str]:
     """
@@ -351,37 +357,37 @@ def calculate_timecode_by_ratio(timecode_duration, full_text, text_chunk):
     """
     return int(len(text_chunk) / len(full_text) * timecode_duration)
 
-def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_at_breaker, breakers):
+def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations):
 
-    def find_split_index(text, max_char_per_line, min_char_per_line, split_at_breaker, breakers=None):
+    def find_split_index(text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations=None):
         """
         Finds the index at which the given text should be split into two lines.
 
         Parameters:
             text (str): The input text to split.
             max_char_per_line (int): The maximum number of characters per line.
-            split_at_breaker (bool): If True, prioritize splitting at breakers.
-            breakers (set or list, optional): Set or list of breaker characters.
+            split_at_punctuation (bool): If True, prioritize splitting at punctuations.
+            punctuations (set or list, optional): Set or list of punctuation characters.
 
         Returns:
             int: The index at which to split the text.
         """
-        if breakers is None:
-            breakers = {'.', ',', ':', '?', '!'}
+        if punctuations is None:
+            punctuations = {'.', ',', ':', '?', '!'}
         else:
-            breakers = set(breakers)
+            punctuations = set(punctuations)
         
         # Ensure max_char_per_line does not exceed the text length
         max_char_per_line = min(max_char_per_line, len(text) - 1)
         if len(text) <= min_char_per_line:
             return len(text)
-        # Look for a breaker from the right, starting from max_char_per_line
-        if split_at_breaker:
+        # Look for a punctuation from the right, starting from max_char_per_line
+        if split_at_punctuation:
             for i in range(max_char_per_line, min_char_per_line -1, -1):
-                if text[i] in breakers and not text[i+1].isdigit():
-                    return i + 1  # Include the breaker in the split
+                if text[i] in punctuations and not text[i+1].isdigit():
+                    return i + 1  # Include the punctuation in the split
 
-        # If no breaker is found, look for whitespace from the right
+        # If no punctuation is found, look for whitespace from the right
         for i in range(max_char_per_line, -1, -1):
             if text[i].isspace():
                 return i
@@ -390,12 +396,12 @@ def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_a
         return max_char_per_line
 
     # Find split for the first line
-    split_index = find_split_index(text, max_char_per_line, min_char_per_line, True, breakers)
+    split_index = find_split_index(text, max_char_per_line, min_char_per_line, False, punctuations)
     line_one = text[:split_index]
     remaining_text = text[split_index:]
 
     # Find split for the second line
-    split_index = find_split_index(remaining_text, max_char_per_line, min_char_per_line, split_at_breaker, breakers)
+    split_index = find_split_index(remaining_text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
     line_two = remaining_text[:split_index]
     remaining_text = remaining_text[split_index:]
 
