@@ -431,7 +431,7 @@ class UI(QMainWindow):
         sync_combobox_index = self.synchronizeComboBox.currentIndex()
         if sync_combobox_index == 0:
             max_char_per_line = 42
-            min_char_per_line = 33
+            min_char_per_line = 30
         elif sync_combobox_index == 1:
             max_char_per_line = 30
             min_char_per_line = 20
@@ -445,7 +445,6 @@ class UI(QMainWindow):
             self.clean_extra_white_spaces(srt_file)
             correct_intersected_srt.correct_intersected_blocks(srt_file)
             try:
-                raise TypeError("This is a TypeError")
                 sync_srt.sync(srt_file, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
             except Exception as e:
                 msg = QMessageBox(self)
