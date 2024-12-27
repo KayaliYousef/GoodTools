@@ -15,7 +15,7 @@ import prep_srt
 import correct_intersected_srt
 import helper_functions
 
-VERSION = "1.5.3"
+VERSION = "1.5.4"
 
 class UI(QMainWindow):
   # constructor

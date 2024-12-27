@@ -5,7 +5,7 @@ import random
 
 import helper_functions
 
-def srt_to_json(srt_file_path:str, text_len:int) -> None:
+def srt_to_json(srt_file_path:str, save_json=True) -> None | dict:
     # Read the SRT file
 
     with open(srt_file_path, 'r', encoding='utf-8') as file:
@@ -55,10 +55,14 @@ def srt_to_json(srt_file_path:str, text_len:int) -> None:
             entry = {
                 'block_number': int(block_number),
                 'time_code': f'{start_time} --> {end_time}',
+                'time_code_start': start_time,
+                'time_code_end': end_time,
                 'text': text.strip(),
+                'linebreak_in_text': True if '\n' in text else False,
                 'num_characters': num_characters,
                 'weight' : weight,
-                'duration': duration
+                'duration_in_seconds': duration,
+                'duration_in_milliseconds': duration * 1000,
             }
 
             # Append the entry to the list
@@ -83,10 +87,14 @@ def srt_to_json(srt_file_path:str, text_len:int) -> None:
     # Combine JSON entries and additional information
     result = {'entries': json_entries, 'additional_info': additional_info}
 
-    # Save the JSON data to a file
-    json_file_path = srt_file_path.replace('.srt', '_output.json')
-    with open(json_file_path, 'w', encoding='utf-8') as json_file:
-        json.dump(result, json_file, ensure_ascii=False, indent=2)
+    if save_json:
+        # Save the JSON data to a file
+        json_file_path = srt_file_path.replace('.srt', '_output.json')
+        with open(json_file_path, 'w', encoding='utf-8') as json_file:
+            json.dump(result, json_file, ensure_ascii=False, indent=2)
+    
+    else:
+        return result
 
 
 def json_to_srt(json_data: str) -> str:
@@ -138,8 +146,8 @@ def divide_text_with_weights(text, weights):
 
     return chunks
 
-def split_in_half(text):
-    if len(text) > 33:
+def split_in_half(text, max_char_per_line=33):
+    if len(text) > max_char_per_line:
         mid_forward = len(text) // 2
         mid_backward = len(text) // 2
         mid = 0
