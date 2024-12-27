@@ -418,7 +418,7 @@ class UI(QMainWindow):
     def synchronize(self):
         # get user input
         punctuations = None
-        if self.splitAtPunctuationCheckBox.isChecked:
+        if self.splitAtPunctuationCheckBox.isChecked():
             split_at_punctuation = True
         else:
             split_at_punctuation = False
