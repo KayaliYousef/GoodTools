@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="Compare">
        <attribute name="title">
@@ -444,45 +444,40 @@ QPushButton:pressed {
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="2" column="1" colspan="3">
-           <widget class="QLabel" name="convertInfoLabel_2">
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="splitAtPunctuationCheckBox">
             <property name="font">
              <font>
               <family>Segoe UI Light</family>
               <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
              </font>
             </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
             <property name="text">
-             <string>Put all .srt files in the same folder with this program and press the Sort Button.</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
+             <string>Split at punctuation</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="4" rowspan="6">
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="synchronizeComboBox">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
+            <property name="styleSheet">
+             <string notr="true">QComboBox {
+    border: 1px solid #555;
+}
+</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+           </widget>
           </item>
-          <item row="2" column="0" rowspan="7">
+          <item row="1" column="0" rowspan="10">
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -498,7 +493,46 @@ QPushButton:pressed {
             </property>
            </spacer>
           </item>
-          <item row="9" column="1">
+          <item row="2" column="1" colspan="2">
+           <widget class="QTextEdit" name="processSrtTextEdit">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>35</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="3">
+           <widget class="QLabel" name="convertInfoLabel_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>140</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+            <property name="text">
+             <string>Select a file by clicking the 'Navigate' button or by dragging and dropping the file. Next, choose the process you want to run.
+If no file is selected, the program will automatically search for .srt files in the folder where the program is located. This method allows you to process multiple .srt files simultaneously.</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
            <widget class="QPushButton" name="synchronizePushButton">
             <property name="font">
              <font>
@@ -526,41 +560,14 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
-           <widget class="QCheckBox" name="splitAtPunctuationCheckBox">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Split at punctuation</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QComboBox" name="synchronizeComboBox">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QComboBox {
-    border: 1px solid #555;
-}
-</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
+          <item row="3" column="1">
            <widget class="QLabel" name="convertInfoLabel_3">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>60</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <family>Segoe UI Light</family>
@@ -584,7 +591,52 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="9" column="3">
+          <item row="2" column="3">
+           <widget class="QPushButton" name="processSrtFileDialogPushButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4" rowspan="10">
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Maximum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="7" column="1" colspan="3">
+           <widget class="QTextEdit" name="processSrtFeedbackTextEdit"/>
+          </item>
+          <item row="6" column="3">
            <widget class="QPushButton" name="sortPushButton">
             <property name="font">
              <font>
@@ -612,7 +664,7 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="8" column="3">
+          <item row="5" column="3">
            <widget class="QPushButton" name="convertPushButton">
             <property name="font">
              <font>
@@ -640,7 +692,7 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="7" column="3">
+          <item row="4" column="3">
            <widget class="QPushButton" name="cleanPushButton">
             <property name="font">
              <font>
@@ -668,7 +720,35 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="3" column="2" rowspan="7">
+          <item row="3" column="3">
+           <widget class="QPushButton" name="checkSequencePushButton">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>Check SRT Sequence</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2" rowspan="4">
            <widget class="Line" name="line_2">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -811,143 +891,6 @@ QPushButton:pressed {
              </size>
             </property>
            </spacer>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="SrtSequenceCheck">
-       <attribute name="title">
-        <string>SRT Sequence Check</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_11">
-        <item row="0" column="0">
-         <layout class="QGridLayout" name="gridLayout_15">
-          <item row="0" column="1">
-           <widget class="QLabel" name="convertInfoLabel_5">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
-            <property name="text">
-             <string>Put all .srt files in the same folder with this program and press the Check Sequence button.</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="checkSequencePushButton">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>Check Sequence</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <spacer name="horizontalSpacer_14">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="0">
-           <spacer name="horizontalSpacer_13">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="2">
-           <spacer name="horizontalSpacer_15">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="2">
-           <spacer name="horizontalSpacer_16">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="1">
-           <widget class="QTextEdit" name="checkSequenceFeedbackTextEdit">
-            <property name="font">
-             <font>
-              <pointsize>11</pointsize>
-             </font>
-            </property>
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
           </item>
          </layout>
         </item>

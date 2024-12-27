@@ -1,6 +1,8 @@
 import glob
 import re
 
+from PyQt5.QtGui import QTextCharFormat, QColor
+
 """Helper Functions"""
 
 def append_to_textedit(text_edit:object, text:str) -> None:
@@ -20,6 +22,24 @@ def append_to_textedit(text_edit:object, text:str) -> None:
     cursor = text_edit.textCursor()
     cursor.movePosition(cursor.End)
     text_edit.setTextCursor(cursor)
+
+def write_to_textedit(text_edit: object, text: str, color: str):
+    """
+    Writes the given text with the specified color into the QTextEdit.
+
+    Args:
+        text_edit (QTextEdit): The QTextEdit object to write into.
+        text (str): The text to write.
+        color (str): The color of the text (e.g., "red", "blue", "#RRGGBB").
+    """
+    text_edit.clear()
+    cursor = text_edit.textCursor()
+    format = QTextCharFormat()
+    format.setForeground(QColor(color))  # Set the specified color
+
+    cursor.movePosition(cursor.End)  # Move to the end of the text edit
+    cursor.insertText(text, format)  # Insert the text with the format
+    text_edit.setTextCursor(cursor)  # Update the cursor in the text edit
 
 def get_files(extension:str) -> list[str]:
     """

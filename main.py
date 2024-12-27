@@ -1,13 +1,12 @@
 import difflib
-import glob
 import json
 import os
 import re
 import sys
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QTextEdit, QRadioButton, QFileDialog, QCheckBox, QTabWidget, QComboBox, QMessageBox
-from PyQt5.QtGui import QIcon, QTextCursor
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QTextEdit, QRadioButton, QFileDialog, QCheckBox, QTabWidget, QComboBox
+from PyQt5.QtGui import QIcon
 
 import convention_validator as cv
 import correct_intersected_srt
@@ -50,6 +49,7 @@ class UI(QMainWindow):
         self.reConstructSrtPushButton = self.findChild(QPushButton, "reConstructSrtPushButton")
         self.fileDialog1 = self.findChild(QPushButton, "fileDialog1")    
         self.fileDialog2 = self.findChild(QPushButton, "fileDialog2")
+        self.processSrtFileDialogPushButton = self.findChild(QPushButton, "processSrtFileDialogPushButton")
         self.srtPrepLoadSrtfileDialog = self.findChild(QPushButton, "srtPrepLoadSrtfileDialog")
         self.srtPrepLoadJsonfileDialog = self.findChild(QPushButton, "srtPrepLoadJsonfileDialog")
         self.srtPrepLoadTxtfileDialog = self.findChild(QPushButton, "srtPrepLoadTxtfileDialog")
@@ -57,11 +57,12 @@ class UI(QMainWindow):
         self.firstFileName = self.findChild(QTextEdit, "firstFile")
         self.secondFileName = self.findChild(QTextEdit, "secondFile")
         self.validateFeedbackTextEdit = self.findChild(QTextEdit, "validateFeedbackTextEdit")
-        self.checkSequenceFeedbackTextEdit = self.findChild(QTextEdit, "checkSequenceFeedbackTextEdit")
+        self.processSrtFeedbackTextEdit = self.findChild(QTextEdit, "processSrtFeedbackTextEdit")
         self.srtPrepLoadSrtTextEdit = self.findChild(QTextEdit, "srtPrepLoadSrtTextEdit")
         self.srtPrepLoadJsonTextEdit = self.findChild(QTextEdit, "srtPrepLoadJsonTextEdit")
         self.srtPrepLoadTxtTextEdit = self.findChild(QTextEdit, "srtPrepLoadTxtTextEdit")
         self.srtPrepFeedbackTextEdit = self.findChild(QTextEdit, "srtPrepFeedbackTextEdit")
+        self.processSrtTextEdit = self.findChild(QTextEdit, "processSrtTextEdit")
         # ComboBoxes
         self.synchronizeComboBox = self.findChild(QComboBox, "synchronizeComboBox")
         # Tab
@@ -80,6 +81,7 @@ class UI(QMainWindow):
         self.srtPrepLoadSrtfileDialog.clicked.connect(self.browse_load_srt_to_prep)
         self.srtPrepLoadJsonfileDialog.clicked.connect(self.browse_load_json_to_reconstruct_srt)
         self.srtPrepLoadTxtfileDialog.clicked.connect(self.browse_load_txt_to_reconstruct_srt)
+        self.processSrtFileDialogPushButton.clicked.connect(self.browse_process_srt_tab)
         self.prepSrtPushButton.clicked.connect(self.prepare_srt_for_deepl)
         self.reConstructSrtPushButton.clicked.connect(self.reconstruct_srt_from_json)
 
@@ -89,24 +91,33 @@ class UI(QMainWindow):
 
     def browse1(self):
         self.firstFileName.setText("")
-        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.srt)")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.TXT *.srt *.SRT *.csv *.CSV)")
         self.firstFileName.setText(fname[0])
+
     def browse2(self):
         self.secondFileName.setText("")
-        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.srt)")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.TXT *.srt *.SRT *.csv *.CSV)")
         self.secondFileName.setText(fname[0])
+
     def browse_load_srt_to_prep(self):
         self.srtPrepLoadSrtTextEdit.setText("")
-        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.srt)")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.srt *.SRT)")
         self.srtPrepLoadSrtTextEdit.setText(fname[0])
+
     def browse_load_json_to_reconstruct_srt(self):
         self.srtPrepLoadJsonTextEdit.setText("")
-        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.json)")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.json *.JSON)")
         self.srtPrepLoadJsonTextEdit.setText(fname[0])
+
     def browse_load_txt_to_reconstruct_srt(self):
         self.srtPrepLoadTxtTextEdit.setText("")
-        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt)")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.TXT)")
         self.srtPrepLoadTxtTextEdit.setText(fname[0])
+
+    def browse_process_srt_tab(self):
+        self.processSrtTextEdit.setText("")
+        fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.srt *.SRT *.vtt *.VTT)")
+        self.processSrtTextEdit.setText(fname[0])
 
 
     """Compare Tab"""
@@ -167,24 +178,66 @@ class UI(QMainWindow):
     
     """Sort Tab"""
     def sort_srt(self):
-        files = sort.get_files()
-        sort.sort(files)
+        fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        if os.path.isfile(fname):
+            try:
+                sort.sort(fname)
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Sorting finished!", "green")
+            except Exception as e:
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"Error: {e}", "red")
+
+        else:
+            files = hf.get_files("srt")
+            if files:
+                for file in files:
+                    sort.sort(file)
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Sorting finished!", "green")
+            else:
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"No Files Found", "black")
 
     """Convert Tab"""
     # function to convert files between srt and vtt
     def convert(self):
-        srt_files = hf.get_files("srt")
-        vtt_files = hf.get_files("vtt")
-        for file in srt_files:
-            srt_vtt_converter.convert_srt_to_vtt(file)
-        for file in vtt_files:
-            srt_vtt_converter.convert_vtt_to_srt(file)
+        fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        if os.path.isfile(fname):
+            try:
+                if fname.lower().endswith(".srt"):
+                    srt_vtt_converter.convert_srt_to_vtt(fname)
+                elif fname.lower().endswith(".vtt"):
+                    srt_vtt_converter.convert_vtt_to_srt(fname)
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Done!", "green")
+            except Exception as e:
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"Error: {e}", "red")
+
+        else:
+            srt_files = hf.get_files("srt")
+            vtt_files = hf.get_files("vtt")
+            for file in srt_files:
+                srt_vtt_converter.convert_srt_to_vtt(file)
+            for file in vtt_files:
+                srt_vtt_converter.convert_vtt_to_srt(file)
+            
+            hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Done!", "green")
 
     """Clean Tab"""
     def clean(self):
-        srt_files = hf.get_files("srt")
-        for file in srt_files:
-            hf.srt_to_plaintext(file)
+        fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        if os.path.isfile(fname):
+            try:
+                if fname.lower().endswith(".srt"):
+                    hf.srt_to_plaintext(fname)
+                    hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Text generation finished!", "green")
+            except Exception as e:
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"Error: {e}", "red")
+
+        else:
+            srt_files = hf.get_files("srt")
+            if srt_files:
+                for file in srt_files:
+                    hf.srt_to_plaintext(file)
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Text generation finished!", "green")
+            else:
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"No Files Found", "black")
 
     """Validate Tab"""
     def validate_srt(self) -> str:
@@ -232,9 +285,13 @@ class UI(QMainWindow):
                 f.write(f"{line}\n")
 
     def check_timecode_sequence(self):
-        srt_files = hf.get_files("srt")
+        fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        if os.path.isfile(fname):
+            srt_files = [fname]
+        else:
+            srt_files = hf.get_files("srt")
         if not len(srt_files):
-            self.checkSequenceFeedbackTextEdit.setPlainText("No Files Found")
+            self.processSrtFeedbackTextEdit.setPlainText("No Files Found")
             return
         #* List to save the error in the timecode wether it's in the same block or between one block and the next block
         error_within_one_block = {}
@@ -323,68 +380,68 @@ class UI(QMainWindow):
 
         #* No errors were found  
         if count == 0:
-            self.checkSequenceFeedbackTextEdit.setHtml("<font color='green'>All Files are Correct</font>")
+            self.processSrtFeedbackTextEdit.setHtml("<font color='green'>All Files are Correct</font>")
 
         #! Errors were found 
         else:
-            self.checkSequenceFeedbackTextEdit.setHtml("<font color='#116b01'>Color Codes:</font><br><font color='#6b0101'>File name; </font><font color='#ff8000'>Timing error within the same block; </font><font color='#014d6b'>Timing error between two blocks; </font><font color='#039169'>Block index error; </font><font color='#6b4401'>Empty/Extra row error; </font><font color='#690391'>Timecode format error.</font>")
+            self.processSrtFeedbackTextEdit.setHtml("<font color='#116b01'>Color Codes:</font><br><font color='#6b0101'>File name; </font><font color='#ff8000'>Timing error within the same block; </font><font color='#014d6b'>Timing error between two blocks; </font><font color='#039169'>Block index error; </font><font color='#6b4401'>Empty/Extra row error; </font><font color='#690391'>Timecode format error.</font>")
             
             for file in srt_files:
                 if error_within_one_block[f"{file}"] or error_between_two_blocks[f"{file}"] or block_index_errors[f"{file}"] or white_space_in_block_index_error[f"{file}"] or empty_row_errors[f"{file}"] or block_format_error[f"{file}"]:
-                    temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                    temp_text = self.processSrtFeedbackTextEdit.toHtml()
                     temp_text = f"{temp_text}<br><font color='#6b0101'><u>{file}</u></font>"
-                    self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                    self.processSrtFeedbackTextEdit.setHtml(temp_text)
                 #* Errors within one block
                 if error_within_one_block[f"{file}"]:
                     print("Error within the same block")
                     for error in error_within_one_block[f"{file}"]:
-                        temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                        temp_text = self.processSrtFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#ff8000'>{error}</font>"
-                        self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                        self.processSrtFeedbackTextEdit.setHtml(temp_text)
                 #* Errors between two blocks
                 if error_between_two_blocks[f"{file}"]:
                     print("Error between two blocks")
                     for i in range(0, len(error_between_two_blocks[f"{file}"]) - 1, 2):
-                        temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                        temp_text = self.processSrtFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#014d6b'>{error_between_two_blocks[f'{file}'][i]} ---- {error_between_two_blocks[f'{file}'][i + 1]}</font>"
-                        self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                        self.processSrtFeedbackTextEdit.setHtml(temp_text)
                     correct_intersected_srt.correct_intersected_blocks(file)
-                    temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                    temp_text = self.processSrtFeedbackTextEdit.toHtml()
                     temp_text = f"{temp_text}<font color='green'>Corrected intersection between timeblocks for file: {file}</font>"
-                    self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                    self.processSrtFeedbackTextEdit.setHtml(temp_text)
                     
                 #* Errors in block index
                 if block_index_errors[f"{file}"]:
                     for error in block_index_errors[f"{file}"]:
-                        temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                        temp_text = self.processSrtFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#039169'>Block Index {error} is wrong or missing</font>"
-                        self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                        self.processSrtFeedbackTextEdit.setHtml(temp_text)
                 #* Errors in block index (white spaces)
                 if white_space_in_block_index_error[f"{file}"]:
                     errors = white_space_in_block_index_error[f"{file}"]
                     errors = [str(error) for error in errors]
-                    temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                    temp_text = self.processSrtFeedbackTextEdit.toHtml()
                     if len(errors) == 1:
                         temp_text = f"{temp_text}<font color='#039169'>Extra white space at Block Index {errors[0]}</font>"
                     else:
                         temp_text = f"{temp_text}<font color='#039169'>Extra white spaces at Block Indices: {','.join(errors)}</font>"
-                    self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                    self.processSrtFeedbackTextEdit.setHtml(temp_text)
                     self.clean_extra_white_spaces(file)
-                    temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                    temp_text = self.processSrtFeedbackTextEdit.toHtml()
                     temp_text = f"{temp_text}<font color='green'>Cleaned white spaces from file: {file}</font>"
-                    self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                    self.processSrtFeedbackTextEdit.setHtml(temp_text)
                 # * Missing empty rows
                 if empty_row_errors[f"{file}"]:
                     for error in empty_row_errors[f"{file}"]:
-                        temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                        temp_text = self.processSrtFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#6b4401'>{error}</font>"
-                        self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                        self.processSrtFeedbackTextEdit.setHtml(temp_text)
                 #* Errors in timecode format
                 if block_format_error[f"{file}"]:
                     for error in block_format_error[f"{file}"]:
-                        temp_text = self.checkSequenceFeedbackTextEdit.toHtml()
+                        temp_text = self.processSrtFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#690391'>{error}</font>"
-                        self.checkSequenceFeedbackTextEdit.setHtml(temp_text)
+                        self.processSrtFeedbackTextEdit.setHtml(temp_text)
 
     """Prep SRT Tab"""
     def prepare_srt_for_deepl(self):
@@ -416,6 +473,8 @@ class UI(QMainWindow):
                 hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
                 
     def synchronize(self):
+        fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+
         # get user input
         punctuations = None
         if self.splitAtPunctuationCheckBox.isChecked():
@@ -439,20 +498,22 @@ class UI(QMainWindow):
             max_char_per_line = sync_data["max_char_per_line"]
             min_char_per_line = sync_data["min_char_per_line"]
         
+        if os.path.isfile(fname):
+            srt_files = [fname]
+        else:
+            srt_files = hf.get_files("srt")
 
-        srt_files = hf.get_files("srt")
         for srt_file in srt_files:
+            sort.sort(srt_file)
             self.clean_extra_white_spaces(srt_file)
             correct_intersected_srt.correct_intersected_blocks(srt_file)
             try:
                 sync_srt.sync(srt_file, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
             except Exception as e:
-                msg = QMessageBox(self)
-                msg.setIcon(QMessageBox.Critical)
-                msg.setWindowTitle("Error")
-                msg.setText(f"Error in {srt_file}:")
-                msg.setInformativeText(str(e))
-                msg.exec_()
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"Error: {e}", "red")
+                return
+
+        hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Synchronization finished!", "green")
 
 
 
