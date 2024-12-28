@@ -408,7 +408,7 @@ def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_a
         # Look for a punctuation from the right, starting from max_char_per_line
         if split_at_punctuation:
             for i in range(max_char_per_line, min_char_per_line -1, -1):
-                if text[i] in punctuations and not text[i+1].isdigit():
+                if text[i] in punctuations and i + 1 < len(text) and not text[i+1].isdigit():
                     return i + 1  # Include the punctuation in the split
 
         # If no punctuation is found, look for whitespace from the right

@@ -219,8 +219,8 @@ def process_remaining_text(json_entries: list[dict], current_index: int, text_fo
         search_index = -1
         remaining_text = text_chunk[:len(text_found)].strip()
 
-    while text_found.strip() != text_chunk.strip():
-        
+    while text_found.strip() != text_chunk.strip() and current_index + search_index < len(json_entries) and current_index + search_index >= 0:
+
         next_entry = json_entries[current_index + search_index]
         next_text = next_entry.get('text', '').replace("\n", " ").strip()
         next_duration = next_entry.get('duration_in_milliseconds', 0)

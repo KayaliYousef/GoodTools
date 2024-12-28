@@ -226,10 +226,10 @@ class UI(QMainWindow):
         if os.path.isfile(fname):
             try:
                 if fname.lower().endswith(".srt"):
-                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace(".srt", ".vtt")}", "All Files(*)")[0]
+                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace('.srt', '.vtt')}", "All Files(*)")[0]
                     srt_vtt_converter.convert_srt_to_vtt(fname, new_file_name)
                 elif fname.lower().endswith(".vtt"):
-                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace(".vtt", ".srt")}", "All Files(*)")[0]
+                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace('.vtt', '.srt')}", "All Files(*)")[0]
                     srt_vtt_converter.convert_vtt_to_srt(fname, new_file_name)
                 hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Convert done!", "green")
             except Exception as e:
@@ -251,7 +251,7 @@ class UI(QMainWindow):
         if os.path.isfile(fname):
             try:
                 if fname.lower().endswith(".srt"):
-                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace(".srt", ".txt")}", "All Files(*)")[0]
+                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace('.srt', '.txt')}", "All Files(*)")[0]
                     hf.srt_to_plaintext(fname, output_file=new_file_name)
                     hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Text generation finished!", "green")
             except Exception as e:
