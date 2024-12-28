@@ -1,0 +1,16 @@
+{
+    "max_char_per_line": 44,
+    "min_char_per_line": 22,
+    "punctuations": [
+        ".",
+        ",",
+        "?",
+        ":",
+        "!"
+    ],
+    "tab_index": 1,
+    "window_width": 800,
+    "window_height": 600,
+    "window_x": 577,
+    "window_y": 172
+}
