@@ -1,7 +1,7 @@
 import re
 
 
-def convert_srt_to_vtt(srt_file_path:str) -> None:
+def convert_srt_to_vtt(srt_file_path:str, output_file=None) -> None:
     # Open the SRT file
     with open(srt_file_path, "r", encoding='utf-8') as srt_file:
         # Read the contents of the file
@@ -19,14 +19,17 @@ def convert_srt_to_vtt(srt_file_path:str) -> None:
     vtt_contents = "WEBVTT\n\n" + vtt_contents
 
     # Write the contents to the VTT file
-    fileName = srt_file_path.split("/")
-    fileName = fileName[-1].split(".")
-    fileName = fileName[0]
-    with open(f"{fileName}.vtt", "w", encoding='utf-8') as vtt_file:
+    if output_file is not None:
+        fileName = output_file
+    else:
+        fileName = srt_file_path.split("/")
+        fileName = fileName[-1].split(".")
+        fileName = fileName[0]+".vtt"
+    with open(f"{fileName}", "w", encoding='utf-8') as vtt_file:
         vtt_file.write(vtt_contents)
 
 
-def convert_vtt_to_srt(srt_file_path:str) -> None:
+def convert_vtt_to_srt(srt_file_path:str, output_file=None) -> None:
     # Open the VTT file
     with open(srt_file_path, "r", encoding='utf-8') as vtt_file:
         # Read the contents of the file
@@ -52,8 +55,11 @@ def convert_vtt_to_srt(srt_file_path:str) -> None:
     srt_contents = srt_contents.strip()
 
     # Write the contents to the SRT file
-    fileName = srt_file_path.split("/")
-    fileName = fileName[-1].split(".")
-    fileName = fileName[0]
-    with open(f"{fileName}.srt", "w", encoding='utf-8') as srt_file:
+    if output_file is not None:
+        fileName = output_file
+    else:
+        fileName = srt_file_path.split("/")
+        fileName = fileName[-1].split(".")
+        fileName = fileName[0]+".srt"
+    with open(f"{fileName}", "w", encoding='utf-8') as srt_file:
         srt_file.write(srt_contents)

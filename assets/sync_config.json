@@ -1,5 +1,0 @@
-{
-    "max_char_per_line": 44,
-    "min_char_per_line": 22,
-    "punctuations": [".", ",", "?", ":", "!"]
-}

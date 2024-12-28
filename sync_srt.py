@@ -362,7 +362,7 @@ def find_chunk_timecode(text_chunk: str, json_entries: list[dict], current_time:
                     
     return None  # Fallback for unmatched chunks
 
-def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations):
+def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, output_file=None):
     # Main Processing
     json_data = srt_to_json(srt_flie, save_json=False)
     entries = json_data.get('entries', [])
@@ -389,7 +389,10 @@ def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, p
             text_chunk = output['text'].replace("\n", " ").strip()
             output["time_code"], current_time = find_chunk_timecode(text_chunk, entries, current_time)
 
-    output_name = srt_flie.rsplit(".", 1)[0] + "_out.srt"
+    if output_file is not None:
+        output_name = output_file
+    else:
+        output_name = srt_flie.rsplit(".", 1)[0] + "_out.srt"
     with open(output_name, "w", encoding='utf-8') as f:
         for block in output_srt_list:
             f.write(f"{block['block_number']}\n{block['time_code']}\n{block['text']}\n\n")

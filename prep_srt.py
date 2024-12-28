@@ -174,7 +174,7 @@ def split_in_half(text, max_char_per_line=33):
     else:
         return text
 
-def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, text_edit:object) -> None:
+def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str) -> None:
     # Load the JSON data
     with open(json_file_path, "r", encoding='utf-8') as json_file:
         json_data = json.load(json_file)
@@ -198,4 +198,5 @@ def reconstruct_srt_from_json_and_txt(json_file_path:str, txt_file_path:str, tex
     srt_file_path = txt_file_path.rsplit(".", 1)[0]+"_new.srt"
     with open(srt_file_path, "w", encoding='utf-8') as output_file:
         output_file.write(srt_content)
+
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import difflib
 import json
 import os
@@ -33,6 +35,7 @@ class UI(QMainWindow):
         self.srtPrepDeleteJsonCheckBox = self.findChild(QCheckBox, "srtPrepDeleteJsonCheckBox")
         self.srtPrepDeleteTxtCheckBox = self.findChild(QCheckBox, "srtPrepDeleteTxtCheckBox")
         self.splitAtPunctuationCheckBox = self.findChild(QCheckBox, "splitAtPunctuationCheckBox")
+        self.srtPrepSplitAtPunctuationCheckBox = self.findChild(QCheckBox, "srtPrepSplitAtPunctuationCheckBox")
         # Radio Buttons
         self.srtRadioButton = self.findChild(QRadioButton, "srtRadioButton")
         self.txtRadioButton = self.findChild(QRadioButton, "txtRadioButton")
@@ -65,6 +68,7 @@ class UI(QMainWindow):
         self.processSrtTextEdit = self.findChild(QTextEdit, "processSrtTextEdit")
         # ComboBoxes
         self.synchronizeComboBox = self.findChild(QComboBox, "synchronizeComboBox")
+        self.prepSrtComboBox = self.findChild(QComboBox, "prepSrtComboBox")
         # Tab
         self.tab = self.findChild(QTabWidget, "tabWidget")
         self.tab.removeTab(2) # remove the validate srt tab TODO update this index if new tabs were added
@@ -82,12 +86,17 @@ class UI(QMainWindow):
         self.srtPrepLoadJsonfileDialog.clicked.connect(self.browse_load_json_to_reconstruct_srt)
         self.srtPrepLoadTxtfileDialog.clicked.connect(self.browse_load_txt_to_reconstruct_srt)
         self.processSrtFileDialogPushButton.clicked.connect(self.browse_process_srt_tab)
-        self.prepSrtPushButton.clicked.connect(self.prepare_srt_for_deepl)
+        self.prepSrtPushButton.clicked.connect(self.prepare_srt_for_translation)
         self.reConstructSrtPushButton.clicked.connect(self.reconstruct_srt_from_json)
 
         # init combobox
-        self.synchronizeComboBox.addItems(["Normal", "Short", "Adjust in assets/sync_config.json"])
+        self.synchronizeComboBox.addItems(["Normal", "Short", "Adjust in assets/config.json"])
         self.synchronizeComboBox.setCurrentIndex(0)
+
+        self.prepSrtComboBox.addItems(["Normal", "Short", "Adjust in assets/config.json"])
+        self.prepSrtComboBox.setCurrentIndex(0)
+
+        self.adjust_window_config()
 
     def browse1(self):
         self.firstFileName.setText("")
@@ -118,6 +127,20 @@ class UI(QMainWindow):
         self.processSrtTextEdit.setText("")
         fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.srt *.SRT *.vtt *.VTT)")
         self.processSrtTextEdit.setText(fname[0])
+
+    def closeEvent(self, event):
+        # get the index of the tab that was opened before closing the programm and save the index to the config file
+        hf.adjust_json_file("assets/config.json", "tab_index", int(self.tab.currentIndex()))
+        hf.adjust_json_file("assets/config.json", "window_width", int(self.width()))
+        hf.adjust_json_file("assets/config.json", "window_height", int(self.height()))
+        hf.adjust_json_file("assets/config.json", "window_x", int(self.x()))
+        hf.adjust_json_file("assets/config.json", "window_y", int(self.y()))
+
+    def adjust_window_config(self):
+        with open("assets/config.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        self.tab.setCurrentIndex(data["tab_index"])
+        self.setGeometry(data["window_x"], data["window_y"], data["window_width"], data["window_height"])
 
 
     """Compare Tab"""
@@ -181,10 +204,11 @@ class UI(QMainWindow):
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         if os.path.isfile(fname):
             try:
-                sort.sort(fname)
+                new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname}", "All Files(*)")[0]
+                sort.sort(fname, output_file=new_file_name)
                 hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Sorting finished!", "green")
             except Exception as e:
-                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"Error: {e}", "red")
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"{e}", "red")
 
         else:
             files = hf.get_files("srt")
@@ -202,12 +226,14 @@ class UI(QMainWindow):
         if os.path.isfile(fname):
             try:
                 if fname.lower().endswith(".srt"):
-                    srt_vtt_converter.convert_srt_to_vtt(fname)
+                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace(".srt", ".vtt")}", "All Files(*)")[0]
+                    srt_vtt_converter.convert_srt_to_vtt(fname, new_file_name)
                 elif fname.lower().endswith(".vtt"):
-                    srt_vtt_converter.convert_vtt_to_srt(fname)
-                hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Done!", "green")
+                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace(".vtt", ".srt")}", "All Files(*)")[0]
+                    srt_vtt_converter.convert_vtt_to_srt(fname, new_file_name)
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Convert done!", "green")
             except Exception as e:
-                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"Error: {e}", "red")
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"{e}", "red")
 
         else:
             srt_files = hf.get_files("srt")
@@ -217,7 +243,7 @@ class UI(QMainWindow):
             for file in vtt_files:
                 srt_vtt_converter.convert_vtt_to_srt(file)
             
-            hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Done!", "green")
+            hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Convert done!", "green")
 
     """Clean Tab"""
     def clean(self):
@@ -225,10 +251,11 @@ class UI(QMainWindow):
         if os.path.isfile(fname):
             try:
                 if fname.lower().endswith(".srt"):
-                    hf.srt_to_plaintext(fname)
+                    new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname.lower().replace(".srt", ".txt")}", "All Files(*)")[0]
+                    hf.srt_to_plaintext(fname, output_file=new_file_name)
                     hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Text generation finished!", "green")
             except Exception as e:
-                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"Error: {e}", "red")
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"{e}", "red")
 
         else:
             srt_files = hf.get_files("srt")
@@ -380,7 +407,10 @@ class UI(QMainWindow):
 
         #* No errors were found  
         if count == 0:
-            self.processSrtFeedbackTextEdit.setHtml("<font color='green'>All Files are Correct</font>")
+            if os.path.isfile(fname):
+                self.processSrtFeedbackTextEdit.setHtml("<font color='green'>File is Correct</font>")
+            else:
+                self.processSrtFeedbackTextEdit.setHtml("<font color='green'>All Files are Correct</font>")
 
         #! Errors were found 
         else:
@@ -444,11 +474,11 @@ class UI(QMainWindow):
                         self.processSrtFeedbackTextEdit.setHtml(temp_text)
 
     """Prep SRT Tab"""
-    def prepare_srt_for_deepl(self):
+    def prepare_srt_for_translation(self):
         srt_file = self.srtPrepLoadSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
 
         if srt_file:
-            text_len = hf.sub_srt_codes(srt_file, output_in_input_path=True)
+            text_len = hf.sub_srt_codes(srt_file, save_output_where_input_is_located=True)
             txt_to_append = f"<font color='#014d6b'>Successfully removed SRT timestamps and generated a text file containing chunks, each with a maximum length of 5000 characters.<font color='#014d6b'>Output saved to:</font> <font color='#039169'>{srt_file.rsplit('.', 1)[0]}.txt</font><br>"
             hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
 
@@ -460,7 +490,10 @@ class UI(QMainWindow):
         json_file = self.srtPrepLoadJsonTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         txt_file = self.srtPrepLoadTxtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         if json_file and txt_file:
-            prep_srt.reconstruct_srt_from_json_and_txt(json_file, txt_file, self.srtPrepFeedbackTextEdit)
+            prep_srt.reconstruct_srt_from_json_and_txt(json_file, txt_file)
+            srt_file_path = txt_file.rsplit(".", 1)[0]+"_new.srt"
+            max_char_per_line, min_char_per_line, split_at_punctuation, punctuations = self.get_sync_config(self.prepSrtComboBox)
+            sync_srt.sync(srt_file_path, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, srt_file_path)
             txt_to_append = f"<font color='#014d6b'>Successfully reconstructed SRT from JSON and TXT.</font><br><font color='#014d6b'>Output saved to</font> <font color='#039169'>{txt_file.rsplit('.', 1)[0]+'_new.srt'}</font><br>"
             hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
             if self.srtPrepDeleteJsonCheckBox.isChecked():
@@ -471,10 +504,8 @@ class UI(QMainWindow):
                 os.remove(txt_file)
                 txt_to_append = f"<font color='#014d6b'>Successfully removed</font> <font color='#6b0101'> {txt_file}</font>"
                 hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
-                
-    def synchronize(self):
-        fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
-
+    
+    def get_sync_config(self, combobox):
         # get user input
         punctuations = None
         if self.splitAtPunctuationCheckBox.isChecked():
@@ -482,12 +513,12 @@ class UI(QMainWindow):
         else:
             split_at_punctuation = False
 
-        with open("assets/sync_config.json", "r", encoding='utf-8') as f:
-            sync_data = json.load(f)
+        with open("assets/config.json", "r", encoding='utf-8') as f:
+            config_data = json.load(f)
 
-        punctuations = sync_data["punctuations"]
+        punctuations = config_data["punctuations"]
 
-        sync_combobox_index = self.synchronizeComboBox.currentIndex()
+        sync_combobox_index = combobox.currentIndex()
         if sync_combobox_index == 0:
             max_char_per_line = 42
             min_char_per_line = 30
@@ -495,22 +526,33 @@ class UI(QMainWindow):
             max_char_per_line = 30
             min_char_per_line = 20
         else:
-            max_char_per_line = sync_data["max_char_per_line"]
-            min_char_per_line = sync_data["min_char_per_line"]
+            max_char_per_line = config_data["max_char_per_line"]
+            min_char_per_line = config_data["min_char_per_line"]
+
+        return max_char_per_line, min_char_per_line, split_at_punctuation, punctuations
+
+    def synchronize(self):
+        fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+
+        max_char_per_line, min_char_per_line, split_at_punctuation, punctuations = self.get_sync_config(self.synchronizeComboBox)
         
         if os.path.isfile(fname):
+            new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname}", "All Files(*)")[0]
             srt_files = [fname]
         else:
             srt_files = hf.get_files("srt")
 
         for srt_file in srt_files:
-            sort.sort(srt_file)
+            sort.sort(srt_file, edit_original_file=True)
             self.clean_extra_white_spaces(srt_file)
             correct_intersected_srt.correct_intersected_blocks(srt_file)
             try:
-                sync_srt.sync(srt_file, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
+                if os.path.isfile(fname):
+                    sync_srt.sync(srt_file, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, new_file_name)
+                else:
+                    sync_srt.sync(srt_file, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
             except Exception as e:
-                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"Error: {e}", "red")
+                hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"{e}", "red")
                 return
 
         hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Synchronization finished!", "green")

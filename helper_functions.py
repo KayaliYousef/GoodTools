@@ -1,4 +1,5 @@
 import glob
+import json
 import re
 
 from PyQt5.QtGui import QTextCharFormat, QColor
@@ -172,13 +173,13 @@ def convert_millisec_to_timecode(milliseconds: int) -> str:
     return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds_remainder:03}"
 
 
-def srt_to_plaintext(srt_file_path:str, output_in_input_path=False) -> None:
+def srt_to_plaintext(srt_file_path:str, save_output_where_input_is_located=False, output_file=None) -> None:
     """
     Converts srt to plain text removing time codes, block numbers and line breaks, then adds a new line break after every dot
 
         Parameters:
             srt_file_path (srt): The path to the srt file
-            output_in_input_path (bool): Flag to control where the output file should be saved
+            save_output_where_input_is_located (bool): Flag to control where the output file should be saved
                                         - True: The output will be saved where the input file is located
                                         - False: The output will be saved where the program is executed
 
@@ -201,23 +202,26 @@ def srt_to_plaintext(srt_file_path:str, output_in_input_path=False) -> None:
     cleaned_lines = re.sub(r'\.(?![\.\.])\s*', '.\n', cleaned_lines)
 
     # output should be saved where input file is located
-    if output_in_input_path:
-        fileName = srt_file_path.rsplit(".", 1)[0]
+    if output_file is not None:
+        fileName = output_file
     else:
-        fileName = srt_file_path.split("/")
-        fileName = fileName[-1].rsplit(".", 1)[0]
+        if save_output_where_input_is_located:
+            fileName = srt_file_path.rsplit(".", 1)[0]+".txt"
+        else:
+            fileName = srt_file_path.split("/")
+            fileName = fileName[-1].rsplit(".", 1)[0]+".txt"
     
-    with open(f"{fileName}.txt", "w", encoding='utf-8') as srt_file:
+    with open(f"{fileName}", "w", encoding='utf-8') as srt_file:
         srt_file.write(cleaned_lines)
 
-def sub_srt_codes(srt_file_path:str, output_in_input_path=False) -> int:
+def sub_srt_codes(srt_file_path:str, save_output_where_input_is_located=False) -> int:
     """
     Converts SRT file into plain text removing block numbers, time codes and empty lines from a SRT file.
     Then splits the text into chunks with maximum length of 5000 characters
 
         Parameters:
         srt_file_path (srt): The path to the srt file
-        output_in_input_path (bool): Flag to control where the output file should be saved
+        save_output_where_input_is_located (bool): Flag to control where the output file should be saved
                                     - True: The output will be saved where the input file is located
                                     - False: The output will be saved where the program is executed
 
@@ -272,7 +276,7 @@ def sub_srt_codes(srt_file_path:str, output_in_input_path=False) -> int:
         new_text = re.sub(r"\.(?!.*\.)", "", new_text)
         
     # output should be saved where the input file is located
-    if output_in_input_path:
+    if save_output_where_input_is_located:
         fileName = srt_file_path.rsplit(".", 1)[0]
     else:
         fileName = srt_file_path.split("/")
@@ -428,3 +432,26 @@ def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_a
     return line_one, line_two, remaining_text
 
 
+def adjust_json_file(file_path: str, key: str, new_value):
+    """
+    Adjusts a JSON file by modifying a specified key with a new value.
+
+    Args:
+        file_path (str): Path to the JSON file.
+        key (str): Key to modify in the JSON file.
+        new_value: New value to set for the specified key.
+
+    """
+    # Read the existing JSON file
+    with open(file_path, 'r', encoding="utf-8") as file:
+        data = json.load(file)
+
+    # Update the key with the new value
+    if key in data:
+        data[key] = new_value
+    else:
+        print(f"Key '{key}' not found in the JSON file.")
+
+    # Write the updated JSON back to the file
+    with open(file_path, 'w', encoding="utf-8") as file:
+        json.dump(data, file, indent=4)
