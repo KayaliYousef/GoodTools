@@ -1,0 +1,117 @@
+<h1>Overview</h1>
+
+<p>This application provides tools for processing SRT files, designed especially for professionals translating videos. It offers multiple functionalities to streamline handling subtitles and ensure optimal workflows.</p>
+
+<hr />
+
+<h2>Compare Tab</h2>
+
+<p><img src="./images/compare_tab.png" alt="Compare Tab" /></p>
+
+<p>In this tab, you can compare two files of the same type (<code>.txt</code>, <code>.srt</code>, or <code>.csv</code>). </p>
+
+<h3>How to Use:</h3>
+
+<ol>
+<li><strong>Input Files</strong>: Drag and drop the files into the input fields or use the "Navigate" button to select files.</li>
+<li><strong>Compare Files</strong>: Click the "Compare" button to generate an HTML file.
+<ul>
+<li>The HTML file will be saved in the same directory where the program is installed.</li>
+<li>Open the HTML file in your browser to view the comparison results.</li>
+</ul></li>
+</ol>
+
+<h3>Features:</h3>
+
+<ul>
+<li><strong>Color Coding</strong>:
+<ul>
+<li><strong>Green</strong>: Text added.</li>
+<li><strong>Red</strong>: Text removed.</li>
+<li><strong>Yellow</strong>: Text edited.</li>
+</ul></li>
+</ul>
+
+<hr />
+
+<h2>Process SRT Tab</h2>
+
+<p><img src="./images/process_srt_tab.png" alt="Process SRT Tab" /></p>
+
+<p>This tab offers multiple tools to process <code>.srt</code> files.</p>
+
+<h3>How to Use:</h3>
+
+<ol>
+<li><strong>Input Files</strong>: 
+<ul>
+<li>Drag and drop files or use the "Navigate" button to select a file.</li>
+<li>Alternatively, if no file is selected, the program will automatically search the directory where it is saved for <code>.srt</code> files. If you press the "Convert Between SRT/VTT" button, it will also detect <code>.vtt</code> files.</li>
+</ul></li>
+<li><strong>Output Files</strong>:
+<ul>
+<li>If files are manually selected, you’ll be prompted to choose a save location.</li>
+<li>If files are detected automatically, the output will be saved in the same directory as the program.</li>
+</ul></li>
+</ol>
+
+<h3>Features:</h3>
+
+<ul>
+<li><strong>Sort SRT</strong>: Sorts the timestamps of <code>.srt</code> files if they are out of order.</li>
+<li><strong>Convert Between SRT/VTT</strong>: Converts files between <code>.srt</code> and <code>.vtt</code> formats.</li>
+<li><strong>Clean SRT and Generate TXT</strong>: Removes timestamps, block numbers, and empty lines from <code>.srt</code> files and saves the cleaned content as a <code>.txt</code> file.</li>
+<li><strong>Check SRT Sequence</strong>: Checks <code>.srt</code> files for common errors:
+<ol>
+<li>Timing errors within the same timestamp.</li>
+<li>Timing errors between two timestamps.</li>
+<li>Block numbering errors.</li>
+<li>Extra spaces after block numbers.</li>
+<li>Extra empty rows.</li>
+<li>Timestamp format errors.</li>
+</ol></li>
+<li><strong>Synchronize SRT</strong>: Adjusts the text in <code>.srt</code> blocks to fit within specified character limits:
+<ol>
+<li><strong>Normal</strong>: 42 max characters per line, 30 min characters per line.</li>
+<li><strong>Short</strong>: 30 max characters per line, 20 min characters per line.</li>
+<li><strong>Custom</strong>: Set your own min/max character limits in the <code>assets/config.json</code> file.</li>
+</ol>
+<ul>
+<li>Optionally, enable "Split at punctuation" to prioritize splitting lines at punctuation marks.</li>
+</ul></li>
+</ul>
+
+<hr />
+
+<h2>SRT Prep/Reconstruction Tab</h2>
+
+<p><img src="./images/prep_srt_tab.png" alt="Prep SRT Tab" /></p>
+
+<p>This tab is designed to facilitate translation workflows using tools like ChatGPT, DeepL, or other AI-powered services.</p>
+
+<h3>How to Use:</h3>
+
+<ol>
+<li><strong>Prepare for Translation</strong>:
+<ul>
+<li>Input an <code>.srt</code> file and click the "Prep SRT" button.</li>
+<li>The program generates:
+<ul>
+<li>A <code>.json</code> file containing the original structure.</li>
+<li>A <code>.txt</code> file split into chunks of up to 5000 characters (split at sentence boundaries). The <code>.txt</code> file contains only text, without timestamps or block numbers, preserving context for AI translation tools.</li>
+</ul></li>
+</ul></li>
+<li><strong>Reconstruct SRT</strong>:
+<ul>
+<li>After translating the <code>.txt</code> file, input the translated file and the <code>.json</code> file.</li>
+<li>Click "Reconstruct SRT and Sync" to:
+<ul>
+<li>Convert the translated text back into <code>.srt</code> format using the original structure.</li>
+<li>Apply synchronization settings (<a href="#process-srt-tab">see synchronization options</a>).</li>
+</ul></li>
+</ul></li>
+</ol>
+
+<hr />
+
+<p>By streamlining tasks such as subtitle comparison, cleaning, and synchronization, this application ensures a more efficient subtitle processing workflow. </p>
