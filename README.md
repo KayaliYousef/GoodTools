@@ -49,7 +49,7 @@ This tab offers multiple tools to process `.srt` files.
 - **Synchronize SRT**: Adjusts the text in `.srt` blocks to fit within specified character limits:
   1. **Normal**: 42 max characters per line, 30 min characters per line.
   2. **Short**: 30 max characters per line, 20 min characters per line.
-  3. **Custom**: Set your own min/max character limits in the `assets/config.json` file.
+  3. **Custom**: Set your own min/max character limits using the Min and Max fields. After you press `Synchronize SRT` the values you chose will be saved in `assets/config.json` and if you leave the fields empty the program will read the values from the config file.
   - Optionally, enable "Split at punctuation" to prioritize splitting lines at punctuation marks.
 
 ---

@@ -34,7 +34,7 @@ class UI(QMainWindow):
         # Check Boxes
         self.srtPrepDeleteJsonCheckBox = self.findChild(QCheckBox, "srtPrepDeleteJsonCheckBox")
         self.srtPrepDeleteTxtCheckBox = self.findChild(QCheckBox, "srtPrepDeleteTxtCheckBox")
-        self.splitAtPunctuationCheckBox = self.findChild(QCheckBox, "splitAtPunctuationCheckBox")
+        self.synchronizeSplitAtPunctuationCheckBox = self.findChild(QCheckBox, "synchronizeSplitAtPunctuationCheckBox")
         self.srtPrepSplitAtPunctuationCheckBox = self.findChild(QCheckBox, "srtPrepSplitAtPunctuationCheckBox")
         # Radio Buttons
         self.srtRadioButton = self.findChild(QRadioButton, "srtRadioButton")
@@ -60,12 +60,16 @@ class UI(QMainWindow):
         self.firstFileName = self.findChild(QTextEdit, "firstFile")
         self.secondFileName = self.findChild(QTextEdit, "secondFile")
         self.validateFeedbackTextEdit = self.findChild(QTextEdit, "validateFeedbackTextEdit")
-        self.processSrtFeedbackTextEdit = self.findChild(QTextEdit, "processSrtFeedbackTextEdit")
         self.srtPrepLoadSrtTextEdit = self.findChild(QTextEdit, "srtPrepLoadSrtTextEdit")
         self.srtPrepLoadJsonTextEdit = self.findChild(QTextEdit, "srtPrepLoadJsonTextEdit")
         self.srtPrepLoadTxtTextEdit = self.findChild(QTextEdit, "srtPrepLoadTxtTextEdit")
         self.srtPrepFeedbackTextEdit = self.findChild(QTextEdit, "srtPrepFeedbackTextEdit")
+        self.prepSrtMinTextEdit = self.findChild(QTextEdit, "prepSrtMinTextEdit")
+        self.prepSrtMaxTextEdit = self.findChild(QTextEdit, "prepSrtMaxTextEdit")
+        self.processSrtFeedbackTextEdit = self.findChild(QTextEdit, "processSrtFeedbackTextEdit")
         self.processSrtTextEdit = self.findChild(QTextEdit, "processSrtTextEdit")
+        self.processSrtMaxTextEdit = self.findChild(QTextEdit, "processSrtMaxTextEdit")
+        self.processSrtMinTextEdit = self.findChild(QTextEdit, "processSrtMinTextEdit")
         # ComboBoxes
         self.synchronizeComboBox = self.findChild(QComboBox, "synchronizeComboBox")
         self.prepSrtComboBox = self.findChild(QComboBox, "prepSrtComboBox")
@@ -88,15 +92,37 @@ class UI(QMainWindow):
         self.processSrtFileDialogPushButton.clicked.connect(self.browse_process_srt_tab)
         self.prepSrtPushButton.clicked.connect(self.prepare_srt_for_translation)
         self.reConstructSrtPushButton.clicked.connect(self.reconstruct_srt_from_json)
+        # Connect ComboBox
+        self.synchronizeComboBox.currentIndexChanged.connect(self.handlesynchronizeComboBoxChange)
+        self.prepSrtComboBox.currentIndexChanged.connect(self.handlePrepSrtComboBoxChange)
 
         # init combobox
-        self.synchronizeComboBox.addItems(["Normal", "Short", "Adjust in assets/config.json"])
+        sync_dropdown_list = ["Normal", "Short", "Enter Max and Min"]
+        self.synchronizeComboBox.addItems(sync_dropdown_list)
         self.synchronizeComboBox.setCurrentIndex(0)
 
-        self.prepSrtComboBox.addItems(["Normal", "Short", "Adjust in assets/config.json"])
+        self.prepSrtComboBox.addItems(sync_dropdown_list)
         self.prepSrtComboBox.setCurrentIndex(0)
 
         self.adjust_window_config()
+
+    def handlesynchronizeComboBoxChange(self, index):
+        # Enable or disable the QTextEdit based on the selected index
+        if index == 2: 
+            self.processSrtMaxTextEdit.setEnabled(True)
+            self.processSrtMinTextEdit.setEnabled(True)
+        else:
+            self.processSrtMaxTextEdit.setEnabled(False)
+            self.processSrtMinTextEdit.setEnabled(False)
+
+    def handlePrepSrtComboBoxChange(self, index):
+        if index == 2:
+            self.prepSrtMaxTextEdit.setEnabled(True)
+            self.prepSrtMinTextEdit.setEnabled(True)
+        else:
+            self.prepSrtMaxTextEdit.setEnabled(False)
+            self.prepSrtMinTextEdit.setEnabled(False)
+
 
     def browse1(self):
         self.firstFileName.setText("")
@@ -143,7 +169,7 @@ class UI(QMainWindow):
         self.setGeometry(data["window_x"], data["window_y"], data["window_width"], data["window_height"])
 
 
-    """Compare Tab"""
+    """Compare"""
     # function to compare two files (srt or txt) and output the difference in an html file
     def compare(self):
         fname1 = self.firstFileName.toPlainText().replace("file:///", "").replace("\\", "/")
@@ -199,7 +225,7 @@ class UI(QMainWindow):
             lines = csv_file.readlines()
             return lines
     
-    """Sort Tab"""
+    """Sort"""
     def sort_srt(self):
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         if os.path.isfile(fname):
@@ -219,7 +245,7 @@ class UI(QMainWindow):
             else:
                 hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"No Files Found", "black")
 
-    """Convert Tab"""
+    """Convert"""
     # function to convert files between srt and vtt
     def convert(self):
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
@@ -245,7 +271,7 @@ class UI(QMainWindow):
             
             hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Convert done!", "green")
 
-    """Clean Tab"""
+    """Clean"""
     def clean(self):
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         if os.path.isfile(fname):
@@ -266,7 +292,7 @@ class UI(QMainWindow):
             else:
                 hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"No Files Found", "black")
 
-    """Validate Tab"""
+    """Validate"""
     def validate_srt(self) -> str:
         srt_files = hf.get_files("srt")
         if not len(srt_files):
@@ -301,7 +327,7 @@ class UI(QMainWindow):
                 temp_text = f"{temp_text}{file}"
                 self.validateFeedbackTextEdit.setHtml(temp_text)
 
-    """Check Sequence Tab"""
+    """Check Sequence"""
     def clean_extra_white_spaces(self, srt_file:str):
         lines = []
         with open(srt_file, "r", encoding='utf-8') as f:
@@ -473,7 +499,7 @@ class UI(QMainWindow):
                         temp_text = f"{temp_text}<font color='#690391'>{error}</font>"
                         self.processSrtFeedbackTextEdit.setHtml(temp_text)
 
-    """Prep SRT Tab"""
+    """Prep SRT"""
     def prepare_srt_for_translation(self):
         srt_file = self.srtPrepLoadSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
 
@@ -492,7 +518,7 @@ class UI(QMainWindow):
         if json_file and txt_file:
             prep_srt.reconstruct_srt_from_json_and_txt(json_file, txt_file)
             srt_file_path = txt_file.rsplit(".", 1)[0]+"_new.srt"
-            max_char_per_line, min_char_per_line, split_at_punctuation, punctuations = self.get_sync_config(self.prepSrtComboBox)
+            max_char_per_line, min_char_per_line, split_at_punctuation, punctuations = self.get_sync_config(self.prepSrtComboBox, self.srtPrepSplitAtPunctuationCheckBox, "prep_srt")
             sync_srt.sync(srt_file_path, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, srt_file_path)
             txt_to_append = f"<font color='#014d6b'>Successfully reconstructed SRT from JSON and TXT.</font><br><font color='#014d6b'>Output saved to</font> <font color='#039169'>{txt_file.rsplit('.', 1)[0]+'_new.srt'}</font><br>"
             hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
@@ -505,10 +531,11 @@ class UI(QMainWindow):
                 txt_to_append = f"<font color='#014d6b'>Successfully removed</font> <font color='#6b0101'> {txt_file}</font>"
                 hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
     
-    def get_sync_config(self, combobox):
+    """Synchronize"""
+    def get_sync_config(self, combobox, checkbox, tab_name):
         # get user input
         punctuations = None
-        if self.splitAtPunctuationCheckBox.isChecked():
+        if checkbox.isChecked():
             split_at_punctuation = True
         else:
             split_at_punctuation = False
@@ -526,15 +553,35 @@ class UI(QMainWindow):
             max_char_per_line = 30
             min_char_per_line = 20
         else:
-            max_char_per_line = config_data["max_char_per_line"]
-            min_char_per_line = config_data["min_char_per_line"]
+            if tab_name == "prep_srt":
+                min_char = self.prepSrtMinTextEdit.toPlainText()
+                max_char = self.prepSrtMaxTextEdit.toPlainText()
+                if min_char and max_char:
+                    max_char_per_line = int(max_char)
+                    min_char_per_line = int(min_char)
+                    hf.adjust_json_file("assets/config.json", "max_char_per_line", max_char_per_line)
+                    hf.adjust_json_file("assets/config.json", "min_char_per_line", min_char_per_line)
+                else:
+                    max_char_per_line = config_data["max_char_per_line"]
+                    min_char_per_line = config_data["min_char_per_line"]
+            else:
+                min_char = self.processSrtMinTextEdit.toPlainText()
+                max_char = self.processSrtMaxTextEdit.toPlainText()
+                if min_char and max_char:
+                    max_char_per_line = int(max_char)
+                    min_char_per_line = int(min_char)
+                    hf.adjust_json_file("assets/config.json", "max_char_per_line", max_char_per_line)
+                    hf.adjust_json_file("assets/config.json", "min_char_per_line", min_char_per_line)
+                else:
+                    max_char_per_line = config_data["max_char_per_line"]
+                    min_char_per_line = config_data["min_char_per_line"]
 
         return max_char_per_line, min_char_per_line, split_at_punctuation, punctuations
 
     def synchronize(self):
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
 
-        max_char_per_line, min_char_per_line, split_at_punctuation, punctuations = self.get_sync_config(self.synchronizeComboBox)
+        max_char_per_line, min_char_per_line, split_at_punctuation, punctuations = self.get_sync_config(self.synchronizeComboBox, self.synchronizeSplitAtPunctuationCheckBox, "sync")
         
         if os.path.isfile(fname):
             new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname}", "All Files(*)")[0]

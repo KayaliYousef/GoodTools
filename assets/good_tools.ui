@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="Compare">
        <attribute name="title">
@@ -444,41 +444,49 @@ QPushButton:pressed {
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="5" column="1">
-           <widget class="QCheckBox" name="splitAtPunctuationCheckBox">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
+          <item row="5" column="3">
+           <widget class="QTextEdit" name="processSrtMaxTextEdit">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>35</height>
+             </size>
             </property>
-            <property name="text">
-             <string>Split at punctuation</string>
+            <property name="placeholderText">
+             <string>Max</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="synchronizeComboBox">
+          <item row="4" column="5">
+           <widget class="QPushButton" name="cleanPushButton">
             <property name="font">
              <font>
               <family>Segoe UI Light</family>
               <pointsize>12</pointsize>
-              <weight>50</weight>
-              <bold>false</bold>
+              <weight>75</weight>
+              <bold>true</bold>
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">QComboBox {
+             <string notr="true">QPushButton {
+    color: #333;
     border: 1px solid #555;
-}
-</string>
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>Clean Srt and Generate Txt</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0" rowspan="10">
-           <spacer name="horizontalSpacer_3">
+          <item row="1" column="6" rowspan="11">
+           <spacer name="horizontalSpacer_4">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -493,46 +501,155 @@ QPushButton:pressed {
             </property>
            </spacer>
           </item>
-          <item row="2" column="1" colspan="2">
-           <widget class="QTextEdit" name="processSrtTextEdit">
+          <item row="7" column="5">
+           <widget class="QPushButton" name="sortPushButton">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>Sort SRT</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="5">
+           <widget class="QPushButton" name="checkSequencePushButton">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>Check SRT Sequence</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="5">
+           <widget class="QPushButton" name="convertPushButton">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>Convert Between SRT/VTT</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4" rowspan="5">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3">
+           <widget class="QCheckBox" name="synchronizeSplitAtPunctuationCheckBox">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Split at punctuation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5">
+           <widget class="QPushButton" name="processSrtFileDialogPushButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QTextEdit" name="processSrtMinTextEdit">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>16777215</width>
               <height>35</height>
              </size>
             </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="3">
-           <widget class="QLabel" name="convertInfoLabel_2">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>140</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
-            <property name="text">
-             <string>Select a file by clicking the 'Navigate' button or by dragging and dropping the file. Next, choose the process you want to run.
-If no file is selected, the program will automatically search for .srt files in the folder where the program is located. This method allows you to process multiple .srt files simultaneously.</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
+            <property name="placeholderText">
+             <string>Min</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="7" column="2" colspan="2">
            <widget class="QPushButton" name="synchronizePushButton">
             <property name="font">
              <font>
@@ -560,7 +677,25 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="2">
+           <widget class="QComboBox" name="synchronizeComboBox">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QComboBox {
+    border: 1px solid #555;
+}
+</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2" colspan="2">
            <widget class="QLabel" name="convertInfoLabel_3">
             <property name="maximumSize">
              <size>
@@ -591,34 +726,50 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="2" column="3">
-           <widget class="QPushButton" name="processSrtFileDialogPushButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>...</string>
+          <item row="2" column="2" colspan="3">
+           <widget class="QTextEdit" name="processSrtTextEdit">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>35</height>
+             </size>
             </property>
            </widget>
           </item>
-          <item row="1" column="4" rowspan="10">
-           <spacer name="horizontalSpacer_4">
+          <item row="1" column="2" colspan="4">
+           <widget class="QLabel" name="convertInfoLabel_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>140</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+            <property name="text">
+             <string>Select a file by clicking the 'Navigate' button or by dragging and dropping the file. Next, choose the process you want to run.
+If no file is selected, the program will automatically search for .srt files in the folder where the program is located. This method allows you to process multiple .srt files simultaneously.</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2" colspan="4">
+           <widget class="QTextEdit" name="processSrtFeedbackTextEdit"/>
+          </item>
+          <item row="1" column="0" rowspan="11" colspan="2">
+           <spacer name="horizontalSpacer_3">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -632,128 +783,6 @@ QPushButton:pressed {
              </size>
             </property>
            </spacer>
-          </item>
-          <item row="7" column="1" colspan="3">
-           <widget class="QTextEdit" name="processSrtFeedbackTextEdit"/>
-          </item>
-          <item row="6" column="3">
-           <widget class="QPushButton" name="sortPushButton">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>Sort SRT</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="3">
-           <widget class="QPushButton" name="convertPushButton">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>Convert Between SRT/VTT</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="3">
-           <widget class="QPushButton" name="cleanPushButton">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>Clean Srt and Generate Txt</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="3">
-           <widget class="QPushButton" name="checkSequencePushButton">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>Check SRT Sequence</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2" rowspan="4">
-           <widget class="Line" name="line_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-           </widget>
           </item>
          </layout>
         </item>
@@ -903,8 +932,14 @@ QPushButton:pressed {
        <layout class="QGridLayout" name="gridLayout_13">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_12">
-          <item row="8" column="2">
-           <widget class="QComboBox" name="prepSrtComboBox">
+          <item row="5" column="2" colspan="3">
+           <widget class="QTextEdit" name="srtPrepLoadJsonTextEdit">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>35</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <family>Segoe UI Light</family>
@@ -912,14 +947,78 @@ QPushButton:pressed {
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">QComboBox {
-    border: 1px solid #555;
-}
-</string>
+             <string notr="true">QTextEdit{
+	border:1px solid #555
+}</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>SRT File</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="4">
+           <widget class="QTextEdit" name="prepSrtMaxTextEdit">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QTextEdit{
+	border:1px solid #555
+}</string>
+            </property>
+            <property name="placeholderText">
+             <string>Max</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1" colspan="5">
+           <widget class="QPushButton" name="reConstructSrtPushButton">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>Reconstruct SRT and Sync</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" colspan="3">
            <widget class="QTextEdit" name="srtPrepLoadSrtTextEdit">
             <property name="maximumSize">
              <size>
@@ -940,222 +1039,7 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="8" column="3">
-           <widget class="QCheckBox" name="srtPrepDeleteJsonCheckBox">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Delete Json</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" rowspan="11">
-           <spacer name="horizontalSpacer_17">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="6" column="1">
-           <widget class="QLabel" name="label_6">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Txt File</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="3">
-           <widget class="QCheckBox" name="srtPrepDeleteTxtCheckBox">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Delete Txt</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="3">
-           <widget class="QPushButton" name="srtPrepLoadJsonfileDialog">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>8</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1" colspan="3">
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="3">
-           <widget class="QPushButton" name="srtPrepLoadSrtfileDialog">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>8</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" colspan="3">
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="label_3">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>SRT File</string>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="1" colspan="3">
-           <widget class="QTextEdit" name="srtPrepFeedbackTextEdit">
-            <property name="font">
-             <font>
-              <pointsize>11</pointsize>
-             </font>
-            </property>
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="QCheckBox" name="srtPrepSplitAtPunctuationCheckBox">
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Split at punctuation</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="3">
-           <widget class="QPushButton" name="srtPrepLoadTxtfileDialog">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font">
-             <font>
-              <family>Segoe UI Light</family>
-              <pointsize>8</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
-    border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
+          <item row="1" column="2" colspan="3">
            <widget class="QPushButton" name="prepSrtPushButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -1189,20 +1073,39 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
-           <widget class="QLabel" name="label_5">
+          <item row="11" column="1" colspan="5">
+           <widget class="QTextEdit" name="srtPrepFeedbackTextEdit">
             <property name="font">
              <font>
-              <family>Segoe UI Light</family>
-              <pointsize>12</pointsize>
+              <pointsize>11</pointsize>
              </font>
             </property>
-            <property name="text">
-             <string>Json File</string>
+            <property name="readOnly">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="0" column="4" rowspan="11">
+          <item row="2" column="1" colspan="5">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="3" column="1" colspan="5">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="6" rowspan="12">
            <spacer name="horizontalSpacer_18">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -1218,8 +1121,8 @@ QPushButton:pressed {
             </property>
            </spacer>
           </item>
-          <item row="2" column="1" colspan="3">
-           <spacer name="verticalSpacer_2">
+          <item row="4" column="1" colspan="5">
+           <spacer name="verticalSpacer_3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -1231,28 +1134,151 @@ QPushButton:pressed {
             </property>
            </spacer>
           </item>
-          <item row="5" column="2">
-           <widget class="QTextEdit" name="srtPrepLoadJsonTextEdit">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>35</height>
-             </size>
+          <item row="5" column="5">
+           <widget class="QPushButton" name="srtPrepLoadJsonfileDialog">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>8</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="5">
+           <widget class="QPushButton" name="srtPrepLoadSrtfileDialog">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>8</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLabel" name="label_5">
             <property name="font">
              <font>
               <family>Segoe UI Light</family>
               <pointsize>12</pointsize>
              </font>
             </property>
-            <property name="styleSheet">
-             <string notr="true">QTextEdit{
-	border:1px solid #555
-}</string>
+            <property name="text">
+             <string>Json File</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="2">
+          <item row="6" column="5">
+           <widget class="QPushButton" name="srtPrepLoadTxtfileDialog">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>8</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    color: #333;
+    border: 1px solid #555;
+    border-style: outset;
+    background:white;
+    padding: 5px;
+    }
+
+QPushButton:pressed {
+    background: #0078d7
+    }</string>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" rowspan="12">
+           <spacer name="horizontalSpacer_17">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Maximum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLabel" name="label_6">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Txt File</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2" colspan="3">
            <widget class="QTextEdit" name="srtPrepLoadTxtTextEdit">
             <property name="maximumSize">
              <size>
@@ -1273,31 +1299,88 @@ QPushButton:pressed {
             </property>
            </widget>
           </item>
-          <item row="9" column="1" colspan="3">
-           <widget class="QPushButton" name="reConstructSrtPushButton">
+          <item row="9" column="5">
+           <widget class="QCheckBox" name="srtPrepDeleteJsonCheckBox">
             <property name="font">
              <font>
               <family>Segoe UI Light</family>
               <pointsize>12</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Delete Json</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="5">
+           <widget class="QCheckBox" name="srtPrepDeleteTxtCheckBox">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Delete Txt</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="4">
+           <widget class="QCheckBox" name="srtPrepSplitAtPunctuationCheckBox">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Split at punctuation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2" colspan="2">
+           <widget class="QComboBox" name="prepSrtComboBox">
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">QPushButton {
-    color: #333;
+             <string notr="true">QComboBox {
     border: 1px solid #555;
-    border-style: outset;
-    background:white;
-    padding: 5px;
-    }
-
-QPushButton:pressed {
-    background: #0078d7
-    }</string>
+}
+</string>
             </property>
-            <property name="text">
-             <string>Reconstruct SRT and Sync</string>
+           </widget>
+          </item>
+          <item row="9" column="2" colspan="2">
+           <widget class="QTextEdit" name="prepSrtMinTextEdit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Light</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QTextEdit{
+	border:1px solid #555
+}</string>
+            </property>
+            <property name="placeholderText">
+             <string>Min</string>
             </property>
            </widget>
           </item>

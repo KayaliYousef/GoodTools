@@ -76,40 +76,60 @@ def search_chunk_in_parts(text_chunk: str, text: str, entry: dict,
                                forward_search: bool, timecode_start: str, timecode_end: str) -> str | None:
         """
         Handle remaining chunks by searching in adjacent entries.
-        TODO: if remaining chunk was not full found in the in the next or previous entry we return None, this case has not been tested yet and it should be handled better by looking further in entries using a while loop
-
+        
         - Forward search case:
             - In this case we search in the previous entry and find the final timecode start
     
         - Backward search case
             - In this case we search in the next text and find the final timecode end
         """
-        if forward_search and entry_index - 1 >= 0:  # Search in the previous entry
-            previous_entry = json_entries[entry_index - 1]
-            previous_text = previous_entry.get('text', '').replace("\n", " ").strip()
-            if remaining_chunk in previous_text:
-                previous_duration_ms = previous_entry.get('duration_in_milliseconds', 0)
-                previous_end = previous_entry.get('time_code_end')
-                remaining_duration = hf.calculate_timecode_by_ratio(previous_duration_ms, previous_text, remaining_chunk)
-                timecode_start = hf.convert_millisec_to_timecode(
-                    hf.convert_time_string_to_millisec(previous_end) - remaining_duration
-                )
-                return f"{timecode_start} --> {timecode_end}"
-        elif not forward_search and entry_index + 1 < len(json_entries):  # Search in the next entry
-            next_entry = json_entries[entry_index + 1]
-            next_text = next_entry.get('text', '').replace("\n", " ").strip()
-            if remaining_chunk in next_text:
-                next_duration_ms = next_entry.get('duration_in_milliseconds', 0)
-                next_start = next_entry.get('time_code_start')
-                remaining_duration = hf.calculate_timecode_by_ratio(next_duration_ms, next_text, remaining_chunk)
-                timecode_end = hf.convert_millisec_to_timecode(
-                    hf.convert_time_string_to_millisec(next_start) + remaining_duration
-                )
-                return f"{timecode_start} --> {timecode_end}"
-        return None
+        timecode = None
+        if forward_search: 
+            search_index = entry_index - 1
+        else:
+            search_index = entry_index + 1
+
+        while search_index >= 0 and search_index < len(json_entries):
+            
+            searched_entry = json_entries[search_index]
+            searched_text = searched_entry.get('text', '').replace("\n", " ").strip()
+            searched_duration_ms = searched_entry.get('duration_in_milliseconds', 0)
+
+            if remaining_chunk in searched_text:
+
+                if forward_search:
+                    searched_end = searched_entry.get('time_code_end')
+                    remaining_duration = hf.calculate_timecode_by_ratio(searched_duration_ms, searched_text, remaining_chunk)
+                    timecode_start = hf.convert_millisec_to_timecode(
+                    hf.convert_time_string_to_millisec(searched_end) - remaining_duration
+                    )
+                    timecode = f"{timecode_start} --> {timecode_end}"
+                    return timecode
+
+                else:
+                    searched_start = searched_entry.get('time_code_start')
+                    remaining_duration = hf.calculate_timecode_by_ratio(searched_duration_ms, searched_text, remaining_chunk)
+                    timecode_end = hf.convert_millisec_to_timecode(
+                    hf.convert_time_string_to_millisec(searched_start) + remaining_duration
+                    )
+                    timecode = f"{timecode_start} --> {timecode_end}"
+                    return timecode
+                
+                
+            else: # searched_text is in remaining_chunk
+                    
+                if forward_search:
+                    remaining_chunk = remaining_chunk[:len(searched_text)].strip()
+                else:
+                    remaining_chunk = remaining_chunk[len(searched_text):].strip()
+
+            if forward_search: 
+                search_index -= 1
+            else:
+                search_index += 1
 
     # Determine the loop direction based on search type
-    loop = range(len(text_chunk)) if forward_search else range(len(text_chunk), 0, -1)
+    loop = range(len(text_chunk)) if forward_search else range(len(text_chunk), -1, -1)
 
     for part_len in loop:
         part, start_index = get_part_and_index(text_chunk, text, forward_search, part_len)
@@ -118,9 +138,9 @@ def search_chunk_in_parts(text_chunk: str, text: str, entry: dict,
         
         if (forward_search and start_index == 0) or (not forward_search and start_index + len(part) == len(text)):
             timecode_start, timecode_end, remaining_chunk = calculate_timecodes(entry, part, text_chunk, part_len, forward_search)
-            timecod = handle_remaining_chunk(remaining_chunk, json_entries, entry_index, forward_search, timecode_start, timecode_end)
-            if timecod:
-                return timecod
+            timecode = handle_remaining_chunk(remaining_chunk, json_entries, entry_index, forward_search, timecode_start, timecode_end)
+            if timecode:
+                return timecode
 
     return None
 
@@ -176,7 +196,9 @@ def calculate_timecodes_across_blocks(text_chunk: str, current_index: int, json_
     Here we have three scenarios:
 
     Scenario 1: Text starts with the start of the chunk. In this case the timecode start of the chunk is the timecode start of the text, and the timecode end of the chunk is somewhere in the next entries so we search forward.
+
     Scenario 2: Text ends with the end of the chunk. In this case the timecode end of the chunk is the timecode end of the text, and the timecode start of the chunk is somewhere in the previous entries so we search backwards.
+
     Scenario 3: Text starts in the middle of the chunk and ends also in the middle of the chunk. Here we must look forward and backward to find the remaining chunks in the next and previous entries.
     
         Parameters:
@@ -225,19 +247,27 @@ def process_remaining_text(json_entries: list[dict], current_index: int, text_fo
         next_text = next_entry.get('text', '').replace("\n", " ").strip()
         next_duration = next_entry.get('duration_in_milliseconds', 0)
         if next_text in remaining_text: # next text is fully (or partaly) found in the remaining text
-            if search_forward:
-                text_found = text_found.strip() + " " + remaining_text[len(next_text):].strip()
-                remaining_text = remaining_text[len(next_text):]
-            else:
-                text_found = remaining_text[len(next_text):].strip() + " " + text_found.strip()
-                remaining_text = remaining_text[:len(next_text)]
+            if remaining_text.strip() == next_text.strip(): # next text and remaining text are equal
+                if search_forward:
+                    timecode = hf.convert_time_string_to_millisec(next_entry.get('time_code_end'))
+                else:
+                    timecode = hf.convert_time_string_to_millisec(next_entry.get('time_code_start'))
+                break
 
-            chunk_duration = hf.calculate_timecode_by_ratio(next_duration, next_text, remaining_text)
+            else: # next text is in remaining text
+                if search_forward:
+                    text_found = text_found.strip() + " " + remaining_text[len(next_text):].strip()
+                    remaining_text = remaining_text[len(next_text):].strip()
+                else:
+                    text_found = remaining_text[len(next_text):].strip() + " " + text_found.strip()
+                    remaining_text = remaining_text[:len(next_text)].strip()
 
-            if search_forward:
-                timecode = hf.convert_time_string_to_millisec(next_entry.get('time_code_start')) + chunk_duration
-            else:
-                timecode = hf.convert_time_string_to_millisec(next_entry.get('time_code_end')) - chunk_duration
+                chunk_duration = hf.calculate_timecode_by_ratio(next_duration, next_text, remaining_text)
+
+                if search_forward:
+                    timecode = hf.convert_time_string_to_millisec(next_entry.get('time_code_start')) + chunk_duration
+                else:
+                    timecode = hf.convert_time_string_to_millisec(next_entry.get('time_code_end')) - chunk_duration
 
 
         else: # remaining text is found inside next text
@@ -301,7 +331,7 @@ def find_chunk_timecode(text_chunk: str, json_entries: list[dict], current_time:
             return timecode, current_time
 
         # Case 2: Chunk is fully contained within this entry
-        if text_chunk in text:
+        elif text_chunk in text:
             start_index = text.find(text_chunk)
             if start_index != -1:
                 timecode = calculate_timecodes_for_subtext(entry, text, text_chunk, start_index)
@@ -317,7 +347,7 @@ def find_chunk_timecode(text_chunk: str, json_entries: list[dict], current_time:
                 return timecode, current_time
 
         # Case 3: The entry text is fully contained within the chunk
-        if text in text_chunk:
+        elif text in text_chunk:
             timecode = calculate_timecodes_across_blocks(text_chunk, entry_index, json_entries)
 
             # time found is the timecode end in milliseconds
@@ -334,33 +364,34 @@ def find_chunk_timecode(text_chunk: str, json_entries: list[dict], current_time:
         # in this case we do a forward search and a backward search to find the part of the chunk
         # that is contained in the entry, then according to the search direction we look for the 
         # remaining part of the chunk in the next entry or in the previous entry
-        timecode = search_chunk_in_parts(text_chunk, text, entry, entry_index, json_entries, forward_search=False)
+        else:
+            timecode = search_chunk_in_parts(text_chunk, text, entry, entry_index, json_entries, forward_search=False)
 
-        if timecode: 
-            # time found is the timecode end in milliseconds
-            time_found = hf.convert_time_string_to_millisec(timecode.split("-->")[1].strip())
-            if current_time > time_found:
-                continue
-            else:
-                # updtae the current time
-                current_time = time_found
+            if timecode: 
+                # time found is the timecode end in milliseconds
+                time_found = hf.convert_time_string_to_millisec(timecode.split("-->")[1].strip())
+                if current_time > time_found:
+                    continue
+                else:
+                    # updtae the current time
+                    current_time = time_found
 
-            return timecode, current_time
-        
-        timecode = search_chunk_in_parts(text_chunk, text, entry, entry_index, json_entries, forward_search=True)
+                return timecode, current_time
+            
+            timecode = search_chunk_in_parts(text_chunk, text, entry, entry_index, json_entries, forward_search=True)
 
-        if timecode: 
-            # time found is the timecode end in milliseconds
-            time_found = hf.convert_time_string_to_millisec(timecode.split("-->")[1].strip())
-            if current_time > time_found:
-                continue
-            else:
-                # updtae the current time
-                current_time = time_found
+            if timecode: 
+                # time found is the timecode end in milliseconds
+                time_found = hf.convert_time_string_to_millisec(timecode.split("-->")[1].strip())
+                if current_time > time_found:
+                    continue
+                else:
+                    # updtae the current time
+                    current_time = time_found
 
-            return timecode, current_time
+                return timecode, current_time
                     
-    return None  # Fallback for unmatched chunks
+    # return None  # Fallback for unmatched chunks
 
 def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, output_file=None):
     # Main Processing
@@ -372,16 +403,29 @@ def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, p
 
 
     while text:
-        line1, line2, extra_text = hf.split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
+        line1, line2, extra_text, hashtag_found = hf.split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
 
         text = extra_text
+        if hashtag_found:
+            block_text = f"{line1.strip()}"
+        else:
+            block_text = f"{line1.strip()}\n{line2.strip()}"
+
         output_srt_list.append({
             "block_number": block_number,
             "time_code": None,
-            "text": f"{line1.strip()}\n{line2.strip()}",
+            "text": block_text,
         })
 
         block_number += 1
+
+        if hashtag_found: 
+            output_srt_list.append({
+                "block_number": block_number,
+                "time_code": None,
+                "text": "##",
+            })
+            block_number += 1
 
     current_time = 0
     for output in output_srt_list:
@@ -397,3 +441,5 @@ def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, p
         for block in output_srt_list:
             f.write(f"{block['block_number']}\n{block['time_code']}\n{block['text']}\n\n")
 
+if __name__ == "__main__":
+    sync("input.srt", 42, 30, False, None, "output.srt")

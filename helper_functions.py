@@ -419,17 +419,32 @@ def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_a
         # If no whitespace is found, return max_char_per_line
         return max_char_per_line
 
+    hashtag_found = False
     # Find split for the first line
     split_index = find_split_index(text, max_char_per_line, min_char_per_line, False, punctuations)
     line_one = text[:split_index]
     remaining_text = text[split_index:]
 
-    # Find split for the second line
-    split_index = find_split_index(remaining_text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
-    line_two = remaining_text[:split_index]
-    remaining_text = remaining_text[split_index:]
+    if "##" in line_one: # if hashtag was found in line don't try and search for line two
+        hashtag_found = True
+        hashtag_index = line_one.find("##")
+        remaining_text = line_one[len("##") + hashtag_index:] + remaining_text
+        line_one = line_one[:hashtag_index].strip()
+        line_two = ""
+    
+    else:
+        # Find split for the second line
+        split_index = find_split_index(remaining_text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
+        line_two = remaining_text[:split_index]
+        remaining_text = remaining_text[split_index:]
 
-    return line_one, line_two, remaining_text
+        if "##" in line_two:
+            hashtag_found = True
+            hashtag_index = line_two.find("##")
+            remaining_text = line_two[len("##") + hashtag_index] + remaining_text
+            line_one = f"{line_one.strip()}\n{line_two[:hashtag_index].strip()}"
+
+    return line_one, line_two, remaining_text, hashtag_found
 
 
 def adjust_json_file(file_path: str, key: str, new_value):
