@@ -1,117 +1,142 @@
-<h1>Overview</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subtitle Processing Application</title>
+</head>
+<body>
+    <h1>Overview</h1>
+    <p>This application provides tools for processing SRT files, designed especially for professionals translating videos. It offers multiple functionalities to streamline handling subtitles and ensure optimal workflows.</p>
+    <hr>
 
-<p>This application provides tools for processing SRT files, designed especially for professionals translating videos. It offers multiple functionalities to streamline handling subtitles and ensure optimal workflows.</p>
+    <h2>Compare Tab</h2>
+    <img src="./images/compare_tab.png" alt="Compare Tab" width="400" height="300">
+    <p>In this tab, you can compare two files of the same type (<code>.txt</code>, <code>.srt</code>, or <code>.csv</code>).</p>
 
-<hr />
+    <h3>How to Use:</h3>
+    <ol>
+        <li><strong>Input Files:</strong> Drag and drop the files into the input fields or use the "Navigate" button to select files.</li>
+        <li><strong>Compare Files:</strong> Click the "Compare" button to generate an HTML file.
+            <ul>
+                <li>The HTML file will be saved in the same directory where the program is installed.</li>
+                <li>Open the HTML file in your browser to view the comparison results.</li>
+            </ul>
+        </li>
+    </ol>
 
-<h2>Compare Tab</h2>
+    <h3>Features:</h3>
+    <ul>
+        <li><strong>Color Coding:</strong>
+            <ul>
+                <li><span style="color: green;">Green:</span> Text added.</li>
+                <li><span style="color: red;">Red:</span> Text removed.</li>
+                <li><span style="color: yellow;">Yellow:</span> Text edited.</li>
+            </ul>
+        </li>
+    </ul>
+    <hr>
 
-<p><img src="./images/compare_tab.png" alt="Compare Tab" /></p>
+    <h2>Process SRT Tab</h2>
+    <img src="./images/process_srt_tab.png" alt="Process SRT Tab" width="400" height="300">
+    <p>This tab offers multiple tools to process <code>.srt</code> files.</p>
 
-<p>In this tab, you can compare two files of the same type (<code>.txt</code>, <code>.srt</code>, or <code>.csv</code>). </p>
+    <h3>How to Use:</h3>
+    <ol>
+        <li><strong>Input Files:</strong>
+            <ul>
+                <li>Drag and drop files or use the "Navigate" button to select a file.</li>
+                <li>Alternatively, if no file is selected, the program will automatically search the directory where it is saved for <code>.srt</code> files. If you press the "Convert Between SRT/VTT" button, it will also detect <code>.vtt</code> files.</li>
+            </ul>
+        </li>
+        <li><strong>Output Files:</strong>
+            <ul>
+                <li>If files are manually selected, you’ll be prompted to choose a save location.</li>
+                <li>If files are detected automatically, the output will be saved in the same directory as the program.</li>
+            </ul>
+        </li>
+    </ol>
 
-<h3>How to Use:</h3>
+    <h3>Features:</h3>
+    <ul>
+        <li><strong>Sort SRT:</strong> Sorts the timestamps of <code>.srt</code> files if they are out of order.</li>
+        <li><strong>Convert Between SRT/VTT:</strong> Converts files between <code>.srt</code> and <code>.vtt</code> formats.</li>
+        <li><strong>Clean SRT and Generate TXT:</strong> Removes timestamps, block numbers, and empty lines from <code>.srt</code> files and saves the cleaned content as a <code>.txt</code> file.</li>
+        <li><strong>Check SRT Sequence:</strong> Checks <code>.srt</code> files for common errors:
+            <ol>
+                <li>Timing errors within the same timestamp.</li>
+                <li>Timing errors between two timestamps.</li>
+                <li>Block numbering errors.</li>
+                <li>Extra spaces after block numbers.</li>
+                <li>Extra empty rows.</li>
+                <li>Timestamp format errors.</li>
+            </ol>
+        </li>
+        <li><strong>Synchronize SRT:</strong> Adjusts the text in <code>.srt</code> blocks to fit within specified character limits:
+            <ul>
+                <li><strong>Normal:</strong> 42 max characters per line, 30 min characters per line.</li>
+                <li><strong>Short:</strong> 30 max characters per line, 20 min characters per line.</li>
+                <li><strong>Custom:</strong> Set your own min/max character limits using the Min and Max fields. After you press <code>Synchronize SRT</code> the values you chose will be saved in <code>assets/config.json</code> and if you leave the fields empty the program will read the values from the config file.</li>
+            </ul>
+            Optionally, enable "Split at punctuation" to prioritize splitting lines at punctuation marks.
+        </li>
+    </ul>
+    <hr>
 
-<ol>
-<li><strong>Input Files</strong>: Drag and drop the files into the input fields or use the "Navigate" button to select files.</li>
-<li><strong>Compare Files</strong>: Click the "Compare" button to generate an HTML file.
-<ul>
-<li>The HTML file will be saved in the same directory where the program is installed.</li>
-<li>Open the HTML file in your browser to view the comparison results.</li>
-</ul></li>
-</ol>
+    <h2>SRT Prep/Reconstruction Tab</h2>
+    <img src="./images/prep_srt_tab.png" alt="Prep SRT Tab" width="400" height="300">
+    <p>This tab is designed to facilitate translation workflows using tools like ChatGPT, DeepL, or other AI-powered services.</p>
 
-<h3>Features:</h3>
+    <h3>How to Use:</h3>
+    <ol>
+        <li><strong>Prepare for Translation:</strong>
+            <ul>
+                <li>Input an <code>.srt</code> file and click the "Prep SRT" button.</li>
+                <li>The program generates:
+                    <ul>
+                        <li>A <code>.json</code> file containing the original structure.</li>
+                        <li>A <code>.txt</code> file split into chunks of up to 5000 characters (split at sentence boundaries). The <code>.txt</code> file contains only text, without timestamps or block numbers, preserving context for AI translation tools.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li><strong>Reconstruct SRT:</strong>
+            <ul>
+                <li>After translating the <code>.txt</code> file, input the translated file and the <code>.json</code> file.</li>
+                <li>Click "Reconstruct SRT and Sync" to:
+                    <ul>
+                        <li>Convert the translated text back into <code>.srt</code> format using the original structure.</li>
+                        <li>Apply synchronization settings (<a href="#process-srt-tab">see synchronization options</a>).</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ol>
+    <hr>
 
-<ul>
-<li><strong>Color Coding</strong>:
-<ul>
-<li><strong>Green</strong>: Text added.</li>
-<li><strong>Red</strong>: Text removed.</li>
-<li><strong>Yellow</strong>: Text edited.</li>
-</ul></li>
-</ul>
+    <h2>Important Notice About Windows Security Warning</h2>
+    <p>When you run our application, Windows may display a security warning stating that the program is not certified. This occurs because the application does not have a code-signing certificate, which is typically required for official certification.</p>
 
-<hr />
+    <h3>Why This Happens</h3>
+    <p>Our software is created with great care, but it is distributed without a paid code-signing certificate. Obtaining such a certificate requires significant resources, which might not be feasible for smaller projects or independent developers.</p>
 
-<h2>Process SRT Tab</h2>
+    <h3>Is the Program Safe?</h3>
+    <p>Yes, the program is safe to use. We take every measure to ensure the application's integrity and security:</p>
+    <ul>
+        <li>The code has been thoroughly tested.</li>
+        <li>No malicious or harmful software is included.</li>
+        <li>It performs the tasks exactly as described in the documentation.</li>
+    </ul>
 
-<p><img src="./images/process_srt_tab.png" alt="Process SRT Tab" /></p>
+    <h3>What Should You Do?</h3>
+    <ol>
+        <li>Click <strong>"More info"</strong> on the warning screen.</li>
+        <li>Select <strong>"Run anyway"</strong> to proceed with launching the application.</li>
+    </ol>
 
-<p>This tab offers multiple tools to process <code>.srt</code> files.</p>
+    <h3>Our Commitment to Your Safety</h3>
+    <p>We understand the importance of trust when using software. If you have any concerns, please don't hesitate to contact us. Additionally, you can scan the application with antivirus software for your peace of mind.</p>
 
-<h3>How to Use:</h3>
-
-<ol>
-<li><strong>Input Files</strong>: 
-<ul>
-<li>Drag and drop files or use the "Navigate" button to select a file.</li>
-<li>Alternatively, if no file is selected, the program will automatically search the directory where it is saved for <code>.srt</code> files. If you press the "Convert Between SRT/VTT" button, it will also detect <code>.vtt</code> files.</li>
-</ul></li>
-<li><strong>Output Files</strong>:
-<ul>
-<li>If files are manually selected, you’ll be prompted to choose a save location.</li>
-<li>If files are detected automatically, the output will be saved in the same directory as the program.</li>
-</ul></li>
-</ol>
-
-<h3>Features:</h3>
-
-<ul>
-<li><strong>Sort SRT</strong>: Sorts the timestamps of <code>.srt</code> files if they are out of order.</li>
-<li><strong>Convert Between SRT/VTT</strong>: Converts files between <code>.srt</code> and <code>.vtt</code> formats.</li>
-<li><strong>Clean SRT and Generate TXT</strong>: Removes timestamps, block numbers, and empty lines from <code>.srt</code> files and saves the cleaned content as a <code>.txt</code> file.</li>
-<li><strong>Check SRT Sequence</strong>: Checks <code>.srt</code> files for common errors:
-<ol>
-<li>Timing errors within the same timestamp.</li>
-<li>Timing errors between two timestamps.</li>
-<li>Block numbering errors.</li>
-<li>Extra spaces after block numbers.</li>
-<li>Extra empty rows.</li>
-<li>Timestamp format errors.</li>
-</ol></li>
-<li><strong>Synchronize SRT</strong>: Adjusts the text in <code>.srt</code> blocks to fit within specified character limits:
-<ol>
-<li><strong>Normal</strong>: 42 max characters per line, 30 min characters per line.</li>
-<li><strong>Short</strong>: 30 max characters per line, 20 min characters per line.</li>
-<li><strong>Custom</strong>: Set your own min/max character limits using the Min and Max fields. After you press <code>Synchronize SRT</code> the values you chose will be saved in <code>assets/config.json</code> and if you leave the fields empty the program will read the values from the config file.</li>
-</ol>
-<ul>
-<li>Optionally, enable "Split at punctuation" to prioritize splitting lines at punctuation marks.</li>
-</ul></li>
-</ul>
-
-<hr />
-
-<h2>SRT Prep/Reconstruction Tab</h2>
-
-<p><img src="./images/prep_srt_tab.png" alt="Prep SRT Tab" /></p>
-
-<p>This tab is designed to facilitate translation workflows using tools like ChatGPT, DeepL, or other AI-powered services.</p>
-
-<h3>How to Use:</h3>
-
-<ol>
-<li><strong>Prepare for Translation</strong>:
-<ul>
-<li>Input an <code>.srt</code> file and click the "Prep SRT" button.</li>
-<li>The program generates:
-<ul>
-<li>A <code>.json</code> file containing the original structure.</li>
-<li>A <code>.txt</code> file split into chunks of up to 5000 characters (split at sentence boundaries). The <code>.txt</code> file contains only text, without timestamps or block numbers, preserving context for AI translation tools.</li>
-</ul></li>
-</ul></li>
-<li><strong>Reconstruct SRT</strong>:
-<ul>
-<li>After translating the <code>.txt</code> file, input the translated file and the <code>.json</code> file.</li>
-<li>Click "Reconstruct SRT and Sync" to:
-<ul>
-<li>Convert the translated text back into <code>.srt</code> format using the original structure.</li>
-<li>Apply synchronization settings (<a href="#process-srt-tab">see synchronization options</a>).</li>
-</ul></li>
-</ul></li>
-</ol>
-
-<hr />
-
-<p>By streamlining tasks such as subtitle comparison, cleaning, and synchronization, this application ensures a more efficient subtitle processing workflow. </p>
+    <p>Thank you for your understanding and support!</p>
+</body>
+</html>

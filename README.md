@@ -4,7 +4,7 @@ This application provides tools for processing SRT files, designed especially fo
 ---
 
 ## Compare Tab
-![Compare Tab](./images/compare_tab.png)
+<img src="./images/compare_tab.png" alt="Compare Tab" width=400 height=300/>
 
 In this tab, you can compare two files of the same type (`.txt`, `.srt`, or `.csv`). 
 
@@ -23,7 +23,7 @@ In this tab, you can compare two files of the same type (`.txt`, `.srt`, or `.cs
 ---
 
 ## Process SRT Tab
-![Process SRT Tab](./images/process_srt_tab.png)
+<img src="./images/process_srt_tab.png" alt="Process SRT Tab" width=400 height=300/>
 
 This tab offers multiple tools to process `.srt` files.
 
@@ -55,7 +55,7 @@ This tab offers multiple tools to process `.srt` files.
 ---
 
 ## SRT Prep/Reconstruction Tab
-![Prep SRT Tab](./images/prep_srt_tab.png)
+<img src="./images/prep_srt_tab.png" alt="Prep SRT Tab" width=400 height=300/>
 
 This tab is designed to facilitate translation workflows using tools like ChatGPT, DeepL, or other AI-powered services.
 
@@ -74,3 +74,28 @@ This tab is designed to facilitate translation workflows using tools like ChatGP
 ---
 
 By streamlining tasks such as subtitle comparison, cleaning, and synchronization, this application ensures a more efficient subtitle processing workflow. 
+
+---
+
+## Important Notice About Windows Security Warning
+
+When you run our application, Windows may display a security warning stating that the program is not certified. This occurs because the application does not have a code-signing certificate, which is typically required for official certification. 
+
+### Why This Happens
+Our software is created with great care, but it is distributed without a paid code-signing certificate. Obtaining such a certificate requires significant resources, which might not be feasible for smaller projects or independent developers.
+
+### Is the Program Safe?
+Yes, the program is safe to use. We take every measure to ensure the application's integrity and security:
+- The code has been thoroughly tested.
+- No malicious or harmful software is included.
+- It performs the tasks exactly as described in the documentation.
+
+### What Should You Do?
+When the warning appears, you can safely bypass it by following these steps:
+1. Click **"More info"** on the warning screen.
+2. Select **"Run anyway"** to proceed with launching the application.
+
+### Our Commitment to Your Safety
+We understand the importance of trust when using software. If you have any concerns, please don't hesitate to contact us. Additionally, you can scan the application with antivirus software for your peace of mind.
+
+Thank you for your understanding and support!
