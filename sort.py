@@ -20,8 +20,6 @@ def sort(srt_file_path:str, output_file=None, edit_original_file=False) -> None:
     # Sort the entries by timestamp
     sorted_entries = sorted(entries, key=lambda x: x['time_code'])
     
-    block_number = 1
-
     # Write the contents to the SRT file
     if edit_original_file:
         fileName = srt_file_path
@@ -34,7 +32,7 @@ def sort(srt_file_path:str, output_file=None, edit_original_file=False) -> None:
     # Open the output file
     with open(fileName, "w", encoding="utf-8") as f:
         # Iterate over the sorted entries
-        for entry in sorted_entries:
+        for block_number, entry in enumerate(sorted_entries, start=1):
             # Get the timestamp and text from this entry
             time_code = entry.get('time_code', '')
             text = entry.get('text', '')
@@ -42,6 +40,5 @@ def sort(srt_file_path:str, output_file=None, edit_original_file=False) -> None:
             # Create the SRT block
             srt_block = f"{block_number}\n{time_code}\n{text}\n\n"
             f.write(srt_block)
-            block_number += 1
 
 
