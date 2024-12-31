@@ -2,6 +2,18 @@ import re
 
 
 def convert_srt_to_vtt(srt_file_path:str, output_file=None) -> None:
+    """
+    Convert from SRT fromat to VTT format
+
+        Parameters:
+            srt_flie_path (srt): Path to the SRT file
+            output_file (str, optional): Path to save the sorted SRT file. If None, the sorted file will be named
+                                        with '_sorted' appended to the original name. If a string were entered, this
+                                        string will be the name of the sorted file
+
+        Returns:
+            None
+    """
     # Open the SRT file
     with open(srt_file_path, "r", encoding='utf-8') as srt_file:
         # Read the contents of the file
@@ -13,6 +25,7 @@ def convert_srt_to_vtt(srt_file_path:str, output_file=None) -> None:
     vtt_contents = re.sub(pattern, replace, srt_contents)
 
     # Remove translation block numbers
+    # (?<!) negative lookbehind -- '.' matches any character --> there should be no characters before \d+\n
     vtt_contents = re.sub(r"(?<!.)\d+\n", "", vtt_contents)
 
     # Add the "WEBVTT" header to the VTT file
@@ -30,6 +43,18 @@ def convert_srt_to_vtt(srt_file_path:str, output_file=None) -> None:
 
 
 def convert_vtt_to_srt(srt_file_path:str, output_file=None) -> None:
+    """
+    Convert from VTT fromat to SRT format
+
+        Parameters:
+            srt_flie_path (srt): Path to the SRT file
+            output_file (str, optional): Path to save the sorted SRT file. If None, the sorted file will be named
+                                        with '_sorted' appended to the original name. If a string were entered, this
+                                        string will be the name of the sorted file
+
+        Returns:
+            None
+    """
     # Open the VTT file
     with open(srt_file_path, "r", encoding='utf-8') as vtt_file:
         # Read the contents of the file
@@ -46,11 +71,10 @@ def convert_vtt_to_srt(srt_file_path:str, output_file=None) -> None:
     # Add translation block numbers
     srt_contents = ""
     block_num = 1
-    for block in vtt_contents.split("\n\n"):
+    for block_num, block in enumerate(vtt_contents.split("\n\n"), start=1):
         if block.strip() == "": # Ignore empty lines
             continue
         srt_contents += f"{block_num}\n{block}\n\n"
-        block_num += 1
 
     srt_contents = srt_contents.strip()
 

@@ -75,7 +75,7 @@ class UI(QMainWindow):
         self.prepSrtComboBox = self.findChild(QComboBox, "prepSrtComboBox")
         # Tab
         self.tab = self.findChild(QTabWidget, "tabWidget")
-        self.tab.removeTab(2) # remove the validate srt tab TODO update this index if new tabs were added
+        self.tab.removeTab(2) # this line should remove the validate srt tab TODO update this index if new tabs were added
         # Connect Buttons
         self.comparePushButton.clicked.connect(self.compare)
         self.sortPushButton.clicked.connect(self.sort_srt)

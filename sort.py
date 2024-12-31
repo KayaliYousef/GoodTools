@@ -6,7 +6,9 @@ def sort(srt_file_path:str, output_file=None, edit_original_file=False) -> None:
 
         Parameters:
             srt_file_path (str): The path to the srt file 
-            output_file (None or str): If None the sorted srt file will be the old name with `_sorted` appended to the end of the name. If a string were entered, this string will be the name of the sorted file
+            output_file (str, optional): Path to save the sorted SRT file. If None, the sorted file will be named
+                                        with '_sorted' appended to the original name. If a string were entered, this
+                                        string will be the name of the sorted file
             edit_original_file (bool): If True the origial file will be overwritten, else the output will be saved in another file
 
         Returns:
