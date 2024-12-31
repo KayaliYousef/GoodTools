@@ -123,7 +123,6 @@ class UI(QMainWindow):
             self.prepSrtMaxTextEdit.setEnabled(False)
             self.prepSrtMinTextEdit.setEnabled(False)
 
-
     def browse1(self):
         self.firstFileName.setText("")
         fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.TXT *.srt *.SRT *.csv *.CSV)")
@@ -155,12 +154,16 @@ class UI(QMainWindow):
         self.processSrtTextEdit.setText(fname[0])
 
     def closeEvent(self, event):
-        # get the index of the tab that was opened before closing the programm and save the index to the config file
-        hf.adjust_json_file("assets/config.json", "tab_index", int(self.tab.currentIndex()))
-        hf.adjust_json_file("assets/config.json", "window_width", int(self.width()))
-        hf.adjust_json_file("assets/config.json", "window_height", int(self.height()))
-        hf.adjust_json_file("assets/config.json", "window_x", int(self.x()))
-        hf.adjust_json_file("assets/config.json", "window_y", int(self.y()))
+        # save the window setting before closing it in config.json
+        data = {
+            "tab_index": int(self.tab.currentIndex()),
+            "window_width": int(self.width()),
+            "window_height": int(self.height()),
+            "window_x": int(self.x()),
+            "window_y": int(self.y()),
+            }
+        
+        hf.adjust_json_file("assets/config.json", list(data.keys()), list(data.values()))
 
     def adjust_window_config(self):
         with open("assets/config.json", "r", encoding="utf-8") as f:

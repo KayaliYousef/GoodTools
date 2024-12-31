@@ -447,25 +447,34 @@ def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_a
     return line_one, line_two, remaining_text, hashtag_found
 
 
-def adjust_json_file(file_path: str, key: str, new_value):
+def adjust_json_file(file_path: str, key: str|list, new_value) -> None:
     """
-    Adjusts a JSON file by modifying a specified key with a new value.
+    Adjusts a JSON file by modifying a specified key(s) with a new value(s).
 
     Args:
         file_path (str): Path to the JSON file.
-        key (str): Key to modify in the JSON file.
-        new_value: New value to set for the specified key.
+        key (str or list): Key(s) to modify in the JSON file.
+        new_value: New value(s) to set for the specified key(s).
 
     """
     # Read the existing JSON file
     with open(file_path, 'r', encoding="utf-8") as file:
         data = json.load(file)
 
-    # Update the key with the new value
-    if key in data:
-        data[key] = new_value
+    # Update the key(s) with the new value(s)
+    if isinstance(key, list) and isinstance(new_value, list):
+        for i, k in enumerate(key):
+            if k in data:
+                data[k] = new_value[i]
+            else:
+                print(f"Key '{key}' not found in the JSON file.")
+    elif isinstance(key, str):
+        if key in data:
+            data[key] = new_value
+        else:
+            print(f"Key '{key}' not found in the JSON file.")
     else:
-        print(f"Key '{key}' not found in the JSON file.")
+        print("key and new_value must both be a lists or strings")
 
     # Write the updated JSON back to the file
     with open(file_path, 'w', encoding="utf-8") as file:
