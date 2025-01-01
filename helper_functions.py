@@ -455,8 +455,9 @@ def split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_a
         if "##" in line_two:
             hashtag_found = True
             hashtag_index = line_two.find("##")
-            remaining_text = line_two[len("##") + hashtag_index] + remaining_text
+            remaining_text = line_two[len("##") + hashtag_index:] + remaining_text
             line_one = f"{line_one.strip()}\n{line_two[:hashtag_index].strip()}"
+            line_two = ""
 
     return line_one, line_two, remaining_text, hashtag_found
 
