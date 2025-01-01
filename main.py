@@ -30,17 +30,39 @@ class UI(QMainWindow):
         self.setWindowTitle(f"GoodTools {VERSION}")
 
         # Define Widgets
-        # Labels
-        # Check Boxes
+        self.load_labels()
+        self.load_checkBoxes()
+        self.load_radioButtons()
+        self.load_pushButtons()
+        self.load_entries()
+        self.load_comboBoxes()
+        self.load_tabs()
+
+        # Connect Widgets
+        self.connect_buttons()
+        self.connect_comboBoxes()
+
+        # Init Widgets
+        self.init_comboBoxes()
+
+        self.adjust_window_config()
+
+    """Functions to load UI elements"""
+    def load_labels(self):
+        pass
+
+    def load_checkBoxes(self):
         self.srtPrepDeleteJsonCheckBox = self.findChild(QCheckBox, "srtPrepDeleteJsonCheckBox")
         self.srtPrepDeleteTxtCheckBox = self.findChild(QCheckBox, "srtPrepDeleteTxtCheckBox")
         self.synchronizeSplitAtPunctuationCheckBox = self.findChild(QCheckBox, "synchronizeSplitAtPunctuationCheckBox")
         self.srtPrepSplitAtPunctuationCheckBox = self.findChild(QCheckBox, "srtPrepSplitAtPunctuationCheckBox")
-        # Radio Buttons
+
+    def load_radioButtons(self):
         self.srtRadioButton = self.findChild(QRadioButton, "srtRadioButton")
         self.txtRadioButton = self.findChild(QRadioButton, "txtRadioButton")
         self.csvRadioButton = self.findChild(QRadioButton, "csvRadioButton")
-        # Push Buttons
+
+    def load_pushButtons(self):
         self.comparePushButton = self.findChild(QPushButton, "comparePushButton")
         self.sortPushButton = self. findChild(QPushButton, "sortPushButton")
         self.convertPushButton = self.findChild(QPushButton, "convertPushButton")
@@ -50,13 +72,14 @@ class UI(QMainWindow):
         self.checkSequencePushButton = self.findChild(QPushButton, "checkSequencePushButton")
         self.prepSrtPushButton = self.findChild(QPushButton, "prepSrtPushButton")
         self.reConstructSrtPushButton = self.findChild(QPushButton, "reConstructSrtPushButton")
-        self.fileDialog1 = self.findChild(QPushButton, "fileDialog1")    
-        self.fileDialog2 = self.findChild(QPushButton, "fileDialog2")
+        self.compareFileDialog1 = self.findChild(QPushButton, "FileDialog1")    
+        self.compareFileDialog2 = self.findChild(QPushButton, "FileDialog2")
         self.processSrtFileDialogPushButton = self.findChild(QPushButton, "processSrtFileDialogPushButton")
         self.srtPrepLoadSrtfileDialog = self.findChild(QPushButton, "srtPrepLoadSrtfileDialog")
         self.srtPrepLoadJsonfileDialog = self.findChild(QPushButton, "srtPrepLoadJsonfileDialog")
         self.srtPrepLoadTxtfileDialog = self.findChild(QPushButton, "srtPrepLoadTxtfileDialog")
-        # Entries
+
+    def load_entries(self):
         self.firstFileName = self.findChild(QTextEdit, "firstFile")
         self.secondFileName = self.findChild(QTextEdit, "secondFile")
         self.validateFeedbackTextEdit = self.findChild(QTextEdit, "validateFeedbackTextEdit")
@@ -70,13 +93,17 @@ class UI(QMainWindow):
         self.processSrtTextEdit = self.findChild(QTextEdit, "processSrtTextEdit")
         self.processSrtMaxTextEdit = self.findChild(QTextEdit, "processSrtMaxTextEdit")
         self.processSrtMinTextEdit = self.findChild(QTextEdit, "processSrtMinTextEdit")
-        # ComboBoxes
+
+    def load_comboBoxes(self):
         self.synchronizeComboBox = self.findChild(QComboBox, "synchronizeComboBox")
         self.prepSrtComboBox = self.findChild(QComboBox, "prepSrtComboBox")
-        # Tab
+
+    def load_tabs(self):
         self.tab = self.findChild(QTabWidget, "tabWidget")
         self.tab.removeTab(2) # this line should remove the validate srt tab TODO update this index if new tabs were added
-        # Connect Buttons
+
+    """Functions to connent UI elements with other functions"""
+    def connect_buttons(self):
         self.comparePushButton.clicked.connect(self.compare)
         self.sortPushButton.clicked.connect(self.sort_srt)
         self.convertPushButton.clicked.connect(self.convert)
@@ -84,19 +111,21 @@ class UI(QMainWindow):
         self.synchronizePushButton.clicked.connect(self.synchronize)
         self.validatePushButton.clicked.connect(self.validate_srt)
         self.checkSequencePushButton.clicked.connect(self.check_timecode_sequence)
-        self.fileDialog1.clicked.connect(self.browse1)
-        self.fileDialog2.clicked.connect(self.browse2)
+        self.compareFileDialog1.clicked.connect(self.compare_browse1)
+        self.compareFileDialog2.clicked.connect(self.compare_browse2)
         self.srtPrepLoadSrtfileDialog.clicked.connect(self.browse_load_srt_to_prep)
         self.srtPrepLoadJsonfileDialog.clicked.connect(self.browse_load_json_to_reconstruct_srt)
         self.srtPrepLoadTxtfileDialog.clicked.connect(self.browse_load_txt_to_reconstruct_srt)
         self.processSrtFileDialogPushButton.clicked.connect(self.browse_process_srt_tab)
         self.prepSrtPushButton.clicked.connect(self.prepare_srt_for_translation)
         self.reConstructSrtPushButton.clicked.connect(self.reconstruct_srt_from_json)
-        # Connect ComboBox
-        self.synchronizeComboBox.currentIndexChanged.connect(self.handlesynchronizeComboBoxChange)
+
+    def connect_comboBoxes(self):
+        self.synchronizeComboBox.currentIndexChanged.connect(self.handleSynchronizeComboBoxChange)
         self.prepSrtComboBox.currentIndexChanged.connect(self.handlePrepSrtComboBoxChange)
 
-        # init combobox
+    """Functions to initialize UI elements"""
+    def init_comboBoxes(self):
         sync_dropdown_list = ["Normal", "Short", "Enter Max and Min"]
         self.synchronizeComboBox.addItems(sync_dropdown_list)
         self.synchronizeComboBox.setCurrentIndex(0)
@@ -104,31 +133,14 @@ class UI(QMainWindow):
         self.prepSrtComboBox.addItems(sync_dropdown_list)
         self.prepSrtComboBox.setCurrentIndex(0)
 
-        self.adjust_window_config()
 
-    def handlesynchronizeComboBoxChange(self, index):
-        # Enable or disable the QTextEdit based on the selected index
-        if index == 2: 
-            self.processSrtMaxTextEdit.setEnabled(True)
-            self.processSrtMinTextEdit.setEnabled(True)
-        else:
-            self.processSrtMaxTextEdit.setEnabled(False)
-            self.processSrtMinTextEdit.setEnabled(False)
-
-    def handlePrepSrtComboBoxChange(self, index):
-        if index == 2:
-            self.prepSrtMaxTextEdit.setEnabled(True)
-            self.prepSrtMinTextEdit.setEnabled(True)
-        else:
-            self.prepSrtMaxTextEdit.setEnabled(False)
-            self.prepSrtMinTextEdit.setEnabled(False)
-
-    def browse1(self):
+    """Browse function to open file dialogs"""
+    def compare_browse1(self):
         self.firstFileName.setText("")
         fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.TXT *.srt *.SRT *.csv *.CSV)")
         self.firstFileName.setText(fname[0])
 
-    def browse2(self):
+    def compare_browse2(self):
         self.secondFileName.setText("")
         fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.txt *.TXT *.srt *.SRT *.csv *.CSV)")
         self.secondFileName.setText(fname[0])
@@ -153,6 +165,7 @@ class UI(QMainWindow):
         fname = QFileDialog.getOpenFileName(self, "choose file", ".", "(*.srt *.SRT *.vtt *.VTT)")
         self.processSrtTextEdit.setText(fname[0])
 
+    """Funcation that gets exectued automatically when the main window closes"""
     def closeEvent(self, event):
         # save the window setting before closing it in config.json
         data = {
@@ -165,6 +178,7 @@ class UI(QMainWindow):
         
         hf.adjust_json_file("assets/config.json", list(data.keys()), list(data.values()))
 
+    """Function to adjust the main window confing form the config file in assests folder"""
     def adjust_window_config(self):
         with open("assets/config.json", "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -503,6 +517,15 @@ class UI(QMainWindow):
                         self.processSrtFeedbackTextEdit.setHtml(temp_text)
 
     """Prep SRT"""
+    def handlePrepSrtComboBoxChange(self, index):
+        """Enable or disable the QTextEdit in the Prep SRT Tab based on the selected index"""
+        if index == 2:
+            self.prepSrtMaxTextEdit.setEnabled(True)
+            self.prepSrtMinTextEdit.setEnabled(True)
+        else:
+            self.prepSrtMaxTextEdit.setEnabled(False)
+            self.prepSrtMinTextEdit.setEnabled(False)
+
     def prepare_srt_for_translation(self):
         srt_file = self.srtPrepLoadSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
 
@@ -535,6 +558,15 @@ class UI(QMainWindow):
                 hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
     
     """Synchronize"""
+    def handleSynchronizeComboBoxChange(self, index):
+        """Enable or disable the QTextEdit in the Process SRT Tab sbased on the selected index"""
+        if index == 2: 
+            self.processSrtMaxTextEdit.setEnabled(True)
+            self.processSrtMinTextEdit.setEnabled(True)
+        else:
+            self.processSrtMaxTextEdit.setEnabled(False)
+            self.processSrtMinTextEdit.setEnabled(False)
+
     def get_sync_config(self, combobox, checkbox, tab_name):
         # get user input
         punctuations = None
