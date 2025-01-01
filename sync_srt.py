@@ -1,11 +1,6 @@
 from prep_srt import srt_to_json
 import helper_functions as hf
 
-# # Constants
-# BREAKERS = [".", ",", "?", ":", "!"]
-# MAX_CHAR_PER_LINE = 30
-# MIN_CHAR_PER_LINE = 20
-# SPLIT_AT_BREAKER = True
 
 def search_chunk_in_parts(text_chunk: str, text: str, entry: dict, 
                         entry_index: int, json_entries: list[dict], forward_search: bool) -> str | None:
@@ -144,7 +139,6 @@ def search_chunk_in_parts(text_chunk: str, text: str, entry: dict,
 
     return None
 
-
 def calculate_timecodes_for_subtext(entry: dict, text: str, text_chunk: str, start_index: int) -> str:
     """
     Handles the case where the chunk is fully contained in the text, we have here three scenario:
@@ -189,7 +183,6 @@ def calculate_timecodes_for_subtext(entry: dict, text: str, text_chunk: str, sta
         timecode_end = timecode_end - text_after_chunk_duration
         return f"{hf.convert_millisec_to_timecode(timecode_start)} --> {hf.convert_millisec_to_timecode(timecode_end)}"
 
-
 def calculate_timecodes_across_blocks(text_chunk: str, current_index: int, json_entries: list[dict]) -> str:
     """
     Handles the case where the text is contained in the chunk, which means that the chunk spans multiple entries.
@@ -207,7 +200,7 @@ def calculate_timecodes_across_blocks(text_chunk: str, current_index: int, json_
             json_entries (list(dict)): List of python dictionaries containing information about the block from the original SRT file
 
         Returns
-            str: STR timecode in the format "hh:mm:ss,ms --> hh:mm:ss,ms"
+            str: SRT timecode in the format "hh:mm:ss,ms --> hh:mm:ss,ms"
     """
     entry = json_entries[current_index]
     text = entry.get('text', '').replace("\n", " ").strip()
@@ -231,30 +224,51 @@ def calculate_timecodes_across_blocks(text_chunk: str, current_index: int, json_
 def process_remaining_text(json_entries: list[dict], current_index: int, text_found: str, 
                             text_chunk: str, search_forward: bool) -> str:
     """
-    This function is a helper for the function calculate_timecodes_across_blocks which handles the case where the text is contained in the chunk, in this function
+    This function is a helper for the function calculate_timecodes_across_blocks which handles the case where the text is contained in the chunk, this function will search the next or previous entries for the rest of the chunk
+
+        Parameters:
+            json_entries (list(dict)): List of python dictionaries containing information about the block from the original SRT file
+            current_index (int): The index of the current entry
+            text_found (str): The text of the current entry
+            text_chunk (str): Chunk of text to be found in the entries
+            search_forward (bool): Flag to determine the direction of the search
+                                True: search in the next entries
+                                False: search in the previous entries
+
+        Returns:
+            str: SRT time code in the format "hh:mm:ss,ms"
     """
     timecode = None
     if search_forward:
         search_index = 1
+        # remaining_text is the text from the chunk to be searched for
         remaining_text = text_chunk[len(text_found):].strip()
     else:
         search_index = -1
+        # remaining_text is the text from the chunk to be searched for
         remaining_text = text_chunk[:len(text_found)].strip()
 
+    # keep looping until the full chunk is found or we have reached the first or last element in the entries list
     while text_found.strip() != text_chunk.strip() and current_index + search_index < len(json_entries) and current_index + search_index >= 0:
 
+        # the next or previous entry (detemined by the search direction)
         next_entry = json_entries[current_index + search_index]
+        # the text from the next or previous entry
         next_text = next_entry.get('text', '').replace("\n", " ").strip()
+        # the duration in ms from the next or previous entry
         next_duration = next_entry.get('duration_in_milliseconds', 0)
-        if next_text in remaining_text: # next text is fully (or partaly) found in the remaining text
-            if remaining_text.strip() == next_text.strip(): # next text and remaining text are equal
+        # next (or previous) text is fully (or partaly) found in the remaining text
+        if next_text in remaining_text:
+            # next text and remaining text are equal (end of search)
+            if remaining_text.strip() == next_text.strip():
                 if search_forward:
                     timecode = hf.convert_time_string_to_millisec(next_entry.get('time_code_end'))
                 else:
                     timecode = hf.convert_time_string_to_millisec(next_entry.get('time_code_start'))
                 break
-
-            else: # next text is in remaining text
+            
+            # next (or previous) text is in remaining text
+            else: 
                 if search_forward:
                     text_found = text_found.strip() + " " + remaining_text[len(next_text):].strip()
                     remaining_text = remaining_text[len(next_text):].strip()
@@ -401,11 +415,16 @@ def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, p
     output_srt_list = []
     block_number = 1
 
-
+    # keep looping until we reach the end of the text
     while text:
+        # split the text into three part. line1, line2, and the remaining of the text
+        # line1 and line2 lengths should be between max_char_per_line and min_char_per_line
+        # if hashtag_found is True this function will return line1 and line2 in the variable line1 without the '##'
         line1, line2, extra_text, hashtag_found = hf.split_text_with_max_char(text, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations)
 
+        # update the text variable with the remaining text
         text = extra_text
+        # hashtag symbol '##' is found 
         if hashtag_found:
             block_text = f"{line1.strip()}"
         else:
@@ -419,6 +438,7 @@ def sync(srt_flie, max_char_per_line, min_char_per_line, split_at_punctuation, p
 
         block_number += 1
 
+        # add the hashtag in a seperated block
         if hashtag_found: 
             output_srt_list.append({
                 "block_number": block_number,
