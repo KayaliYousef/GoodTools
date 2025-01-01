@@ -24,7 +24,7 @@ def append_to_textedit(text_edit:object, text:str) -> None:
     cursor.movePosition(cursor.End)
     text_edit.setTextCursor(cursor)
 
-def write_to_textedit(text_edit: object, text: str, color: str):
+def write_to_textedit(text_edit: object, text: str, color: str) -> None:
     """
     Writes the given text with the specified color into the QTextEdit.
 
@@ -214,7 +214,7 @@ def srt_to_plaintext(srt_file_path:str, save_output_where_input_is_located=False
     with open(f"{fileName}", "w", encoding='utf-8') as srt_file:
         srt_file.write(cleaned_lines)
 
-def sub_srt_codes(srt_file_path:str, save_output_where_input_is_located=False) -> int:
+def sub_srt_codes(srt_file_path:str, save_output_where_input_is_located=False, max_char_per_chunk=5000) -> int:
     """
     Converts SRT file into plain text removing block numbers, time codes and empty lines from a SRT file.
     Then splits the text into chunks with maximum length of 5000 characters
@@ -247,32 +247,46 @@ def sub_srt_codes(srt_file_path:str, save_output_where_input_is_located=False) -
     # rejoin the text back together with white spaces between lines
     text = ' '.join(text)
 
+    # check if there is a dot at the end, if not add one
     if text[-1] != '.':
         text += '.'
         added_dot_at_end = True
 
     # splitting the text into lines with maximum length of 5000 characters
     new_text = ""
-    marker = 0
-    tracker = 0
+    marker = 0 # variable to save the location of the split for the chunk (the very start of the text or the index after a dot)
+    tracker = 0 # variable to count the characters
     previous_dot_index = 0
     dot_index = 0
-    max_number_of_characters = 5000
+
     for i, char in enumerate(text):
         tracker += 1
+        # save the index of the dot
         if '.' in char:
             dot_index = i
-        if tracker >= max_number_of_characters and dot_index != previous_dot_index:
-            text_chunk = text[marker:dot_index+1].strip()
+        # tracker is greater of equal the max character per chunk and a new dot was found
+        if tracker >= max_char_per_chunk and dot_index != previous_dot_index:
+            # new chunk is the index after the previous dot (marker) until the current dot
+            text_chunk = text[marker:dot_index + 1].strip()
+            # add the chunk to the new text with linebreaks at the end
             new_text += text_chunk + "\n\n"
-            marker = dot_index+1
-            tracker = i - dot_index+1
+            # update the marker (the index after the dot) to use as a start index for the next chunk
+            marker = dot_index + 1
+            # restart the tracker (text current inext - last dot index)
+            tracker = i - dot_index + 1
+            # update the previous dot index with the current dot index
             previous_dot_index = dot_index
-        if tracker < max_number_of_characters and i == len(text)-1:
+        # tracker is smaller than the max character per chunk but we have reached the end of the text
+        if tracker < max_char_per_chunk and i == len(text) - 1:
+            # the last chunk (from the marker to the end of the text)
             text_chunk = text[marker:].strip()
+            # add the chunk to the new text
             new_text += text_chunk
 
+    # if we added a dot to the text, find it and remove it
     if added_dot_at_end:
+        # (?!) negatie lookahead -- '.*' matches any character with zero occurance or more -- '\.' matches a literal dot
+        # \.(?!.*\.) --> this pattern find the last dot in the text
         new_text = re.sub(r"\.(?!.*\.)", "", new_text)
         
     # output should be saved where the input file is located

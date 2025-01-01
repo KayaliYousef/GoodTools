@@ -47,6 +47,13 @@
 -    \W : matches any non-alphanumeric character (equivalent to [^a-zA-Z0-9_])
 -    \b : matches a word boundary
 
+# Look behind and ahead
+
+-   (?=) - positive lookahead
+-   (?!) - negative lookahead
+-   (?<=) - positive lookbehind
+-   (?<!) - negative lookbehind
+
 # Flags:
 
 -    re.IGNORECASE or re.I : makes matching case-insensitive
