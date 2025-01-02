@@ -18,7 +18,7 @@ import sort
 import srt_vtt_converter
 import sync_srt
 
-VERSION = "1.5.5"
+VERSION = "1.5.6"
 
 class UI(QMainWindow):
   # constructor
@@ -32,7 +32,6 @@ class UI(QMainWindow):
         # Define Widgets
         self.load_labels()
         self.load_checkBoxes()
-        self.load_radioButtons()
         self.load_pushButtons()
         self.load_entries()
         self.load_comboBoxes()
@@ -58,9 +57,7 @@ class UI(QMainWindow):
         self.srtPrepSplitAtPunctuationCheckBox = self.findChild(QCheckBox, "srtPrepSplitAtPunctuationCheckBox")
 
     def load_radioButtons(self):
-        self.srtRadioButton = self.findChild(QRadioButton, "srtRadioButton")
-        self.txtRadioButton = self.findChild(QRadioButton, "txtRadioButton")
-        self.csvRadioButton = self.findChild(QRadioButton, "csvRadioButton")
+        pass
 
     def load_pushButtons(self):
         self.comparePushButton = self.findChild(QPushButton, "comparePushButton")
@@ -72,8 +69,8 @@ class UI(QMainWindow):
         self.checkSequencePushButton = self.findChild(QPushButton, "checkSequencePushButton")
         self.prepSrtPushButton = self.findChild(QPushButton, "prepSrtPushButton")
         self.reConstructSrtPushButton = self.findChild(QPushButton, "reConstructSrtPushButton")
-        self.compareFileDialog1 = self.findChild(QPushButton, "FileDialog1")    
-        self.compareFileDialog2 = self.findChild(QPushButton, "FileDialog2")
+        self.compareFileDialog1 = self.findChild(QPushButton, "fileDialog1")    
+        self.compareFileDialog2 = self.findChild(QPushButton, "fileDialog2")
         self.processSrtFileDialogPushButton = self.findChild(QPushButton, "processSrtFileDialogPushButton")
         self.srtPrepLoadSrtfileDialog = self.findChild(QPushButton, "srtPrepLoadSrtfileDialog")
         self.srtPrepLoadJsonfileDialog = self.findChild(QPushButton, "srtPrepLoadJsonfileDialog")
@@ -82,6 +79,7 @@ class UI(QMainWindow):
     def load_entries(self):
         self.firstFileName = self.findChild(QTextEdit, "firstFile")
         self.secondFileName = self.findChild(QTextEdit, "secondFile")
+        self.compareFeedbackTextEdit = self.findChild(QTextEdit, "compareFeedbackTextEdit")
         self.validateFeedbackTextEdit = self.findChild(QTextEdit, "validateFeedbackTextEdit")
         self.srtPrepLoadSrtTextEdit = self.findChild(QTextEdit, "srtPrepLoadSrtTextEdit")
         self.srtPrepLoadJsonTextEdit = self.findChild(QTextEdit, "srtPrepLoadJsonTextEdit")
@@ -187,53 +185,10 @@ class UI(QMainWindow):
 
 
     """Compare"""
-    # function to compare two files (srt or txt) and output the difference in an html file
-    def compare(self):
-        fname1 = self.firstFileName.toPlainText().replace("file:///", "").replace("\\", "/")
-        fname2 = self.secondFileName.toPlainText().replace("file:///", "").replace("\\", "/")
-        if self.srtRadioButton.isChecked():
-            text1 = hf.clean_srt(fname1)
-            text2 = hf.clean_srt(fname2)
-            # Split the texts into lines
-            lines1 = text1.splitlines()
-            lines2 = text2.splitlines()
-            html_diff = difflib.HtmlDiff().make_file(lines1, lines2)
-            # Make output file name
-            outputName = fname1.replace(".srt", "").replace("\\", "/").split("/")
-            outputName = outputName[-1]
-            # Write the HTML diff to a file
-            with open(outputName+'.html', 'w', encoding="utf-8") as f:
-                f.write(html_diff)
-
-        elif self.txtRadioButton.isChecked():
-            text1 = self.read_txt(fname1)
-            text2 = self.read_txt(fname2)
-            # Split the texts into lines
-            lines1 = text1.splitlines()
-            lines2 = text2.splitlines()
-            html_diff = difflib.HtmlDiff().make_file(lines1, lines2)
-            # Make output file name
-            outputName = fname1.replace(".txt", "").replace("\\", "/").split("/")
-            outputName = outputName[-1]
-            # Write the HTML diff to a file
-            with open(outputName+'.html', 'w', encoding="utf-8") as f:
-                f.write(html_diff)
-
-        elif self.csvRadioButton.isChecked():
-            lines1 = self.read_csv(fname1)
-            lines2 = self.read_csv(fname2)
-            html_diff = difflib.HtmlDiff().make_file(lines1, lines2)
-            # Make output file name
-            outputName = fname1.replace(".csv", "").replace("\\", "/").split("/")
-            outputName = outputName[-1]
-            # Write the HTML diff to a file
-            with open(outputName+'.html', 'w', encoding="utf-8") as f:
-                f.write(html_diff)
-
     def read_txt(self, txt_file_path:str) -> str:
         path = re.sub(r"\\", "/", txt_file_path)
         with open(path, "r", encoding="utf-8") as txt_file:
-            txt = txt_file.read()
+            txt = txt_file.readlines()
         return txt
     
     def read_csv(self, csv_file_path:str) -> list[str]:
@@ -241,10 +196,76 @@ class UI(QMainWindow):
         with open(path, "r", encoding="utf-8") as csv_file:
             lines = csv_file.readlines()
             return lines
-    
+        
+    def write_diff_to_html(self, lines1: list[str], lines2: list[str], fname: str, extension: str) -> None:
+        """
+        Compares between two files (lists of strings) and outputs an HTML files showing the differences between those lists
+
+            Parameters:
+                lines1 (list(str)): The content of the first file as a list of strings
+                lines2 (list(str)): The content of the second file as a list of strings
+                fname (str): The name of one of the files to be used as the output name
+                extension (str): The extension of the input files
+            
+            Returns:
+                None
+        """
+        html_diff = difflib.HtmlDiff().make_file(lines1, lines2)
+        # Make output file name
+        outputName = fname.replace(extension, "").replace("\\", "/").split("/")
+        outputName = outputName[-1]
+        # Write the HTML diff to a file
+        with open(outputName+'.html', 'w', encoding="utf-8") as f:
+            f.write(html_diff)
+
+    def compare(self):
+        """
+        Compare between two files (srt, txt or csv) and output the differences in a HTML file
+        """
+        # get the full path for the files 
+        fname1 = self.firstFileName.toPlainText().replace("file:///", "").replace("\\", "/")
+        fname2 = self.secondFileName.toPlainText().replace("file:///", "").replace("\\", "/")
+        first_file_extension = fname1.rsplit('.', 1)[1]
+        second_file_extension = fname2.rsplit('.', 1)[1]
+
+        # both files end with the same extension
+        if first_file_extension == second_file_extension:
+            # SRT files
+            if first_file_extension.lower() == "srt":
+                lines1 = hf.clean_srt(fname1).splitlines()
+                lines2 = hf.clean_srt(fname2).splitlines()
+                self.write_diff_to_html(lines1, lines2, fname1, ".srt")
+                hf.write_to_textedit(self.compareFeedbackTextEdit, "Done!!", "green")
+
+            # TXT files
+            elif first_file_extension.lower() == "txt":
+                lines1 = self.read_txt(fname1)
+                lines2 = self.read_txt(fname2)
+                self.write_diff_to_html(lines1, lines2, fname1, ".txt")
+                hf.write_to_textedit(self.compareFeedbackTextEdit, "Done!!", "green")
+
+            # CSV files
+            elif first_file_extension == "csv":
+                lines1 = self.read_csv(fname1)
+                lines2 = self.read_csv(fname2)
+                self.write_diff_to_html(lines1, lines2, fname1, ".csv")
+                hf.write_to_textedit(self.compareFeedbackTextEdit, "Done!!", "green")
+            # unsupported file extension
+            else:
+                hf.write_to_textedit(self.compareFeedbackTextEdit, "Only (srt, txt and csv) files are allowed", "black")
+        else:
+            hf.write_to_textedit(self.compareFeedbackTextEdit, "Both files must have the same extension", "red")
+
+
     """Sort"""
     def sort_srt(self):
+        """ 
+        Sort SRT timestamps
+        """
+        # get the file name from the text entry
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+
+        # single file was provided
         if os.path.isfile(fname):
             try:
                 new_file_name = QFileDialog.getSaveFileName(self, "Save File", f"{fname}", "All Files(*)")[0]
@@ -253,19 +274,29 @@ class UI(QMainWindow):
             except Exception as e:
                 hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"{e}", "red")
 
+        # text entry is empty, process all the SRT files located in the same folder with the program
         else:
+            # get all SRT files
             files = hf.get_files("srt")
+            # files were found
             if files:
+    
                 for file in files:
                     sort.sort(file)
                 hf.write_to_textedit(self.processSrtFeedbackTextEdit, "Sorting finished!", "green")
+            
+            # no SRT files were found
             else:
                 hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"No Files Found", "black")
 
     """Convert"""
-    # function to convert files between srt and vtt
     def convert(self):
+        """
+        Convert file(s) between SRT and VTT formats
+        """
+        # get the file name from the text entry
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        # single file was provided
         if os.path.isfile(fname):
             try:
                 if fname.lower().endswith(".srt"):
@@ -290,6 +321,9 @@ class UI(QMainWindow):
 
     """Clean"""
     def clean(self):
+        """
+        Clear SRT file(s) from timestamps, block numbers and empty lines
+        """
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
         if os.path.isfile(fname):
             try:
@@ -345,7 +379,16 @@ class UI(QMainWindow):
                 self.validateFeedbackTextEdit.setHtml(temp_text)
 
     """Check Sequence"""
-    def clean_extra_white_spaces(self, srt_file:str):
+    def clean_extra_white_spaces(self, srt_file:str) -> None:
+        """
+        Remove the extra whitespaces from the end of each line in SRT file
+
+            Parameters:
+                srt_file (str): path to the SRT file
+
+            Return:
+                None
+        """
         lines = []
         with open(srt_file, "r", encoding='utf-8') as f:
             lines = f.readlines()
