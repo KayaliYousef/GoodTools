@@ -225,8 +225,16 @@ class UI(QMainWindow):
         # get the full path for the files 
         fname1 = self.firstFileName.toPlainText().replace("file:///", "").replace("\\", "/")
         fname2 = self.secondFileName.toPlainText().replace("file:///", "").replace("\\", "/")
-        first_file_extension = fname1.rsplit('.', 1)[1]
-        second_file_extension = fname2.rsplit('.', 1)[1]
+        if not fname1 or not fname2:
+            hf.write_to_textedit(self.compareFeedbackTextEdit, "Entries can't be empty, please input two files to compare", "red")
+            return
+        
+        try:
+            first_file_extension = fname1.rsplit('.', 1)[1]
+            second_file_extension = fname2.rsplit('.', 1)[1]
+        except:
+            hf.write_to_textedit(self.compareFeedbackTextEdit, "Input file format error, please drag and drop the files or use the navigate button to choose a file", "red")
+            return
 
         # both files end with the same extension
         if first_file_extension == second_file_extension:
