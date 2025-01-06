@@ -1,6 +1,6 @@
 {
-    "max_char_per_line": 44,
-    "min_char_per_line": 22,
+    "max_char_per_line": 30,
+    "min_char_per_line": 20,
     "punctuations": [
         ".",
         ",",
@@ -8,9 +8,16 @@
         ":",
         "!"
     ],
-    "tab_index": 1,
+    "tab_index": 2,
     "window_width": 800,
     "window_height": 600,
-    "window_x": 577,
-    "window_y": 172
+    "window_x": 682,
+    "window_y": 128,
+    "gen_copies": [
+        "en",
+        "de",
+        "fr",
+        "es",
+        "ar"
+    ]
 }

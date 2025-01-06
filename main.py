@@ -55,6 +55,7 @@ class UI(QMainWindow):
         self.srtPrepDeleteTxtCheckBox = self.findChild(QCheckBox, "srtPrepDeleteTxtCheckBox")
         self.synchronizeSplitAtPunctuationCheckBox = self.findChild(QCheckBox, "synchronizeSplitAtPunctuationCheckBox")
         self.srtPrepSplitAtPunctuationCheckBox = self.findChild(QCheckBox, "srtPrepSplitAtPunctuationCheckBox")
+        self.srtPrepGenCopiesCheckBox = self.findChild(QCheckBox, "srtPrepGenCopiesCheckBox")
 
     def load_radioButtons(self):
         pass
@@ -317,6 +318,7 @@ class UI(QMainWindow):
             except Exception as e:
                 hf.write_to_textedit(self.processSrtFeedbackTextEdit, f"{e}", "red")
 
+        # text entry is empty, process all the SRT/VTT files located in the same folder with the program
         else:
             srt_files = hf.get_files("srt")
             vtt_files = hf.get_files("vtt")
@@ -406,15 +408,30 @@ class UI(QMainWindow):
                 f.write(f"{line}\n")
 
     def check_timecode_sequence(self):
+        """
+        Checks SRT file(s) for common errors:
+            1. Timing errors within the same timestamp.
+            2. Timing errors between two timestamps.
+            3. Block numbering errors.
+            4. Extra spaces after block numbers.
+            5. Extra empty rows.
+            6. Timestamp format errors.
+        """
+        # get the file name from the text entry
         fname = self.processSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
+        # single file was provided
         if os.path.isfile(fname):
             srt_files = [fname]
+        # text entry is empty, get all the SRT files located in the same folder with the program
         else:
             srt_files = hf.get_files("srt")
+        
+        # No files were found in the program folder
         if not len(srt_files):
             self.processSrtFeedbackTextEdit.setPlainText("No Files Found")
             return
-        #* List to save the error in the timecode wether it's in the same block or between one block and the next block
+        
+
         error_within_one_block = {}
         error_between_two_blocks = {}
         block_index_errors = {}
@@ -422,7 +439,7 @@ class UI(QMainWindow):
         empty_row_errors = {}
         block_format_error = {}
         
-        #? Open the SRT files
+        # Open the SRT files
         for file in srt_files:
             error_within_one_block.update({f"{file}":[]})
             error_between_two_blocks.update({f"{file}":[]})
@@ -430,18 +447,20 @@ class UI(QMainWindow):
             white_space_in_block_index_error.update({f"{file}":[]})
             empty_row_errors.update({f"{file}":[]})
             block_format_error.update({f"{file}":[]})
-            block_index = 0
-            block_index_indexes = []
+
 
             with open(file, "r", encoding='utf-8') as srt_file:
-                #? Read the contents of the file
+                # Read the contents of the file
                 srt_contents = srt_file.read()
-            with open(file, "r", encoding='utf-8') as srt_file:
                 srt_contents_lines = srt_file.readlines()
-            #? find the timecodes
+
+
+            # timestamp pattern
             pattern = r"\d+.*\d+.*\d+.*\d+.*\d+.*\d+.*\d+.*\d+"
+            # find all timestamps
             srt_timecodes = re.findall(pattern, srt_contents)
-            #? Find errors in timecodes
+
+            # Find errors in timecodes
             for line in srt_timecodes:
                 if len(line.strip()) != 29:
                     block_format_error[f"{file}"].append(line)
@@ -470,8 +489,10 @@ class UI(QMainWindow):
                     error_between_two_blocks[f"{file}"].append(srt_timecodes[i].strip())
                     error_between_two_blocks[f"{file}"].append(srt_timecodes[i + 1].strip())
                     
+            block_index = 0
+            block_index_indexes = []
             
-            #! Find errors in Block indexes
+            # Find errors in Block indexes
             for i, line in enumerate(srt_contents_lines):
                 if line.strip().isdigit():
                     block_index_indexes.append(i)
@@ -481,7 +502,7 @@ class UI(QMainWindow):
                     if any(char == ' ' for char in line):
                         white_space_in_block_index_error[f"{file}"].append(block_index)
 
-            #* Find errors in empty rows
+            # Find errors in empty rows
             for i in block_index_indexes:
                 if i == 0:
                     continue
@@ -494,19 +515,19 @@ class UI(QMainWindow):
                 if srt_contents_lines[i+2] == "\n":
                     empty_row_errors[f"{file}"].append(f"Extra row at line {i+3}")
 
-        #? count will be greater than 0 if there were error in the srt files
+        # count will be greater than 0 if there were error in the srt files
         count = 0
         for val1, val2, val3, val4, val5, val6 in zip(error_within_one_block.values(), error_between_two_blocks.values(), block_index_errors.values(), white_space_in_block_index_error.values(), empty_row_errors.values(), block_format_error.values()):
             if val1 or val2 or val3 or val4 or val5 or val6: count += 1  
 
-        #* No errors were found  
+        # No errors were found  
         if count == 0:
             if os.path.isfile(fname):
                 self.processSrtFeedbackTextEdit.setHtml("<font color='green'>File is Correct</font>")
             else:
                 self.processSrtFeedbackTextEdit.setHtml("<font color='green'>All Files are Correct</font>")
 
-        #! Errors were found 
+        # Errors were found 
         else:
             self.processSrtFeedbackTextEdit.setHtml("<font color='#116b01'>Color Codes:</font><br><font color='#6b0101'>File name; </font><font color='#ff8000'>Timing error within the same block; </font><font color='#014d6b'>Timing error between two blocks; </font><font color='#039169'>Block index error; </font><font color='#6b4401'>Empty/Extra row error; </font><font color='#690391'>Timecode format error.</font>")
             
@@ -515,14 +536,14 @@ class UI(QMainWindow):
                     temp_text = self.processSrtFeedbackTextEdit.toHtml()
                     temp_text = f"{temp_text}<br><font color='#6b0101'><u>{file}</u></font>"
                     self.processSrtFeedbackTextEdit.setHtml(temp_text)
-                #* Errors within one block
+                # Errors within one block
                 if error_within_one_block[f"{file}"]:
                     print("Error within the same block")
                     for error in error_within_one_block[f"{file}"]:
                         temp_text = self.processSrtFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#ff8000'>{error}</font>"
                         self.processSrtFeedbackTextEdit.setHtml(temp_text)
-                #* Errors between two blocks
+                # Errors between two blocks
                 if error_between_two_blocks[f"{file}"]:
                     print("Error between two blocks")
                     for i in range(0, len(error_between_two_blocks[f"{file}"]) - 1, 2):
@@ -534,13 +555,13 @@ class UI(QMainWindow):
                     temp_text = f"{temp_text}<font color='green'>Corrected intersection between timeblocks for file: {file}</font>"
                     self.processSrtFeedbackTextEdit.setHtml(temp_text)
                     
-                #* Errors in block index
+                # Errors in block index
                 if block_index_errors[f"{file}"]:
                     for error in block_index_errors[f"{file}"]:
                         temp_text = self.processSrtFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#039169'>Block Index {error} is wrong or missing</font>"
                         self.processSrtFeedbackTextEdit.setHtml(temp_text)
-                #* Errors in block index (white spaces)
+                # Errors in block index (white spaces)
                 if white_space_in_block_index_error[f"{file}"]:
                     errors = white_space_in_block_index_error[f"{file}"]
                     errors = [str(error) for error in errors]
@@ -554,13 +575,13 @@ class UI(QMainWindow):
                     temp_text = self.processSrtFeedbackTextEdit.toHtml()
                     temp_text = f"{temp_text}<font color='green'>Cleaned white spaces from file: {file}</font>"
                     self.processSrtFeedbackTextEdit.setHtml(temp_text)
-                # * Missing empty rows
+                # Missing empty rows
                 if empty_row_errors[f"{file}"]:
                     for error in empty_row_errors[f"{file}"]:
                         temp_text = self.processSrtFeedbackTextEdit.toHtml()
                         temp_text = f"{temp_text}<font color='#6b4401'>{error}</font>"
                         self.processSrtFeedbackTextEdit.setHtml(temp_text)
-                #* Errors in timecode format
+                # Errors in timecode format
                 if block_format_error[f"{file}"]:
                     for error in block_format_error[f"{file}"]:
                         temp_text = self.processSrtFeedbackTextEdit.toHtml()
@@ -581,11 +602,11 @@ class UI(QMainWindow):
         srt_file = self.srtPrepLoadSrtTextEdit.toPlainText().replace("file:///", "").replace("\\", "/")
 
         if srt_file:
-            text_len = hf.sub_srt_codes(srt_file, save_output_where_input_is_located=True)
+            hf.sub_srt_codes(srt_file, save_output_where_input_is_located=True)
             txt_to_append = f"<font color='#014d6b'>Successfully removed SRT timestamps and generated a text file containing chunks, each with a maximum length of 5000 characters.<font color='#014d6b'>Output saved to:</font> <font color='#039169'>{srt_file.rsplit('.', 1)[0]}.txt</font><br>"
             hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
 
-            prep_srt.srt_to_json(srt_file,  text_len)
+            prep_srt.srt_to_json(srt_file)
             txt_to_append = f'<font color="#014d6b">Successfully saved SRT time stamps from </font> <font color="#039169">{srt_file.split("/")[-1]}</font> <font color="#014d6b">in JSON.<br>Output saved to:</font> <font color="#039169">{srt_file.replace(".srt", "_output.json")}</font><br>'
             hf.append_to_textedit(self.srtPrepFeedbackTextEdit, txt_to_append)
             
