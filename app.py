@@ -39,7 +39,7 @@ def compare():
             file1_extension = file1_name.rsplit(".", 1)[-1]
             file2_extension = file2_name.rsplit(".", 1)[-1]
             
-            if file1_extension != file2_extension:
+            if file1_extension.lower() != file2_extension.lower():
                 flash('Both files must have the same extension', 'info')
                 return redirect(request.url)
 
@@ -76,6 +76,46 @@ def compare():
 
 @app.route('/process_srt')
 def process_srt():
+
+    if request.method == "POST":
+        srt_file = request.files['srt-file']
+
+        try:
+            srt_file_name = secure_filename(srt_file.filename)
+
+            srt_file_extension = srt_file_name.rsplit(".", 1)[-1]
+            
+            if srt_file_extension.lower != "srt" or srt_file_extension.lower() != "vtt":
+                flash('The uploaded file type is not supported. Please upload .srt or .vtt file', 'info')
+                return redirect(request.url)
+
+            srt_file_path = os.path.join(app.config['UPLOAD_FOLDER'], srt_file_name)
+
+            srt_file.save(srt_file_path)
+
+        #     if file1_extension.lower() == 'srt':
+        #         lines1 = hf.clean_srt(file1_path).splitlines()
+        #         lines2 = hf.clean_srt(file2_path).splitlines()
+        #         diff_html = difflib.HtmlDiff().make_file(lines1, lines2)
+
+        #     elif file1_extension.lower() == "txt" or file1_extension.lower() == "csv":
+        #         with open(file1_path, "r", encoding="utf-8") as f:
+        #             lines1 = f.readlines()
+        #         with open(file2_path, "r", encoding="utf-8") as f:
+        #             lines2 = f.readlines()
+        #         diff_html = difflib.HtmlDiff().make_file(lines1, lines2)
+
+        #     # Clean up uploaded files
+        #     os.remove(file1_path)
+        #     os.remove(file2_path)
+
+        #     # Render template with diff content
+        #     return render_template('diff_result.html', diff_content=diff_html)
+
+        except Exception as e:
+            flash(f'Error processing file: {str(e)}', 'error')
+            return redirect(request.url)
+        
     return render_template('process_srt.html')
 
 @app.route('/srt_prep')

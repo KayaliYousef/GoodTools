@@ -26,16 +26,17 @@
                     <li>Split large SRT files</li>
                     <li>Convert encoding formats</li>
                 </ul>
-                <div class="file-upload">
-                    <h4>Upload SRT File</h4>
-                    <input type="file" id="srtFile" accept=".srt">
-                </div>
-                <button class="btn" style="margin-top: 20px;">Process SRT File</button>
+                <form action="/process_srt" method="POST" enctype="multipart/form-data">
+                    <div class="process_srt-container">
+                        <div class="file-upload">
+                            <h4>SRT File</h4>
+                            <input type="file" id="srt-file" name="srt-file" required accept=".srt, .vtt">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" style="margin-top: 20px;">Upload File</button>
+                </form>
             </div>
         </div>
         
-        <div class="footer">
-            <p>© 2023 Text Processing Toolkit | Web Version of PyQt Application</p>
-        </div>
     </div>
 {% endblock %}
