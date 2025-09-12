@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comparison Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 0 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Comparison Results</h1>
+    
+    <div class="controls">
+        <button onclick="openInNewTab()">Open in New Tab</button>
+        <button onclick="downloadDiff()">Download HTML Report</button>
+        <button onclick="goBack()">Compare Another</button>
+    </div>
+    
+    <div id="diff-content">
+        {{ diff_content|safe }}
+    </div>
+
+    <script>
+        function openInNewTab() {
+            const diffContent = document.getElementById('diff-content').innerHTML;
+            const newWindow = window.open();
+            newWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Comparison Results - ${document.title}</title>
+                </head>
+                <body>${diffContent}</body>
+                </html>
+            `);
+            newWindow.document.close();
+        }
+        
+        function downloadDiff() {
+            const diffContent = document.getElementById('diff-content').innerHTML;
+            const blob = new Blob([`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Comparison Results - ${document.title}</title>
+                </head>
+                <body>${diffContent}</body>
+                </html>
+            `], { type: 'text/html' });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'comparison_report.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function goBack() {
+            window.location.href = "{{ url_for('compare') }}";
+        }
+        
+        // Auto-open in new tab (optional)
+        // window.onload = function() {
+        //     openInNewTab();
+        // };
+    </script>
+</body>
+</html>

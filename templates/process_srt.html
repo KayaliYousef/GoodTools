@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+{%block body %}
+    <div class="container">
+        <div class="header">
+            <h1>Process SRT</h1>
+            <p class="subtitle">Process subtitle files with advanced options</p>
+        </div>
+        
+        <div class="tabs-container">
+            <a href="/compare" class="tab">Compare</a>
+            <a href="/process_srt" class="tab active">Process SRT</a>
+            <a href="/srt_prep" class="tab">SRT Prep/Reconstruct</a>
+        </div>
+        
+        <div class="content">
+            <div class="card">
+                <h3>SRT Processing Tools</h3>
+                <p>Upload an SRT file to process it with various options:</p>
+                <ul class="feature-list">
+                    <li>Adjust timing offsets</li>
+                    <li>Merge multiple SRT files</li>
+                    <li>Split large SRT files</li>
+                    <li>Convert encoding formats</li>
+                </ul>
+                <div class="file-upload">
+                    <h4>Upload SRT File</h4>
+                    <input type="file" id="srtFile" accept=".srt">
+                </div>
+                <button class="btn" style="margin-top: 20px;">Process SRT File</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 Text Processing Toolkit | Web Version of PyQt Application</p>
+        </div>
+    </div>
+{% endblock %}
