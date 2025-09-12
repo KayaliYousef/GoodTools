@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+
+        <div class="header">
+            <h1>Text Comparison</h1>
+            <p class="subtitle">Compare two text files and find differences</p>
+        </div>
+        
+        <div class="tabs-container">
+            <a href="/compare" class="tab active">Compare</a>
+            <a href="/process_srt" class="tab">Process SRT</a>
+            <a href="/srt_prep" class="tab">SRT Prep/Reconstruct</a>
+        </div>
+        
+        <div class="content">
+            <div class="card">
+                <h3>Upload Files to Compare</h3>
+                <!-- Add a form with enctype for file uploads -->
+                <form action="/compare" method="POST" enctype="multipart/form-data">
+                    <div class="compare-container">
+                        <div class="file-upload">
+                            <h4>First File</h4>
+                            <input type="file" id="file1" name="file1" required>
+                        </div>
+                        <div class="file-upload">
+                            <h4>Second File</h4>
+                            <input type="file" id="file2" name="file2" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" style="margin-top: 20px;">Compare Files</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
