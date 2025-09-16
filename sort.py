@@ -29,7 +29,7 @@ def sort(srt_file_path:str, output_file=None, edit_original_file=False) -> None:
         if output_file is not None:
             fileName = output_file
         else:
-            fileName = srt_file_path.lower().rsplit("/", 1)[-1].rsplit(".", 1)[0] + "_sorted.srt"
+            fileName = srt_file_path.rsplit("/", 1)[-1].rsplit(".", 1)[0] + "_sorted.srt"
 
     # Open the output file
     with open(fileName, "w", encoding="utf-8") as f:

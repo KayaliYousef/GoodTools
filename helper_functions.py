@@ -494,3 +494,22 @@ def adjust_json_file(file_path: str, key: str|list, new_value) -> None:
     # Write the updated JSON back to the file
     with open(file_path, 'w', encoding="utf-8") as file:
         json.dump(data, file, indent=4)
+
+
+def clean_extra_white_spaces(srt_file:str) -> None:
+        """
+        Remove the extra whitespaces from the end of each line in SRT file
+
+            Parameters:
+                srt_file (str): path to the SRT file
+
+            Return:
+                None
+        """
+        lines = []
+        with open(srt_file, "r", encoding='utf-8') as f:
+            lines = f.readlines()
+            lines = [line.strip() for line in lines]
+        with open(srt_file, "w", encoding='utf-8') as f:
+            for line in lines:
+                f.write(f"{line}\n")

@@ -5,6 +5,18 @@
 
 {%block body %}
     <div class="container">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+
         <div class="header">
             <h1>Process SRT</h1>
             <p class="subtitle">Process subtitle files with advanced options</p>
@@ -33,7 +45,31 @@
                             <input type="file" id="srt-file" name="srt-file" required accept=".srt, .vtt">
                         </div>
                     </div>
-                    <button type="submit" class="btn" style="margin-top: 20px;">Upload File</button>
+                    <button type="submit" name="action" value="sort">Sort</button>
+                    <button type="submit" name="action" value="convert-srt-vtt">Convert Between SRT/VTT</button>
+                    <button type="submit" name="action" value="clean-srt">Clear SRT and Generate TXT</button>
+                    <button type="submit" name="action" value="check-srt-sequence">Check SRT Sequence</button>
+
+                    <div class="dropdown">
+                        <select name="sync-option" id="sync-option">
+                            <option value="Normal">Normal</option>
+                            <option value="Short">Short</option>
+                            <option value="Custom">Custom</option>
+                        </select>
+
+                        <div class="custom-fields" id="custom-fields">
+                            <div class="input-group">
+                                <span class="input-label">Min</span>
+                                <input type="number" placeholder="Enter Min" id="min-input">
+                            </div>
+                            <div class="input-group">
+                                <span class="input-label">Max</span>
+                                <input type="number" placeholder="Enter Max" id="max-input">
+                            </div>
+                        </div>
+
+                        <button type="submit" name="action" value="sync">Synchronize SRT</button>
+                    </div>
                 </form>
             </div>
         </div>

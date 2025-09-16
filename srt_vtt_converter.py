@@ -36,7 +36,7 @@ def convert_srt_to_vtt(srt_file_path:str, output_file=None) -> None:
         fileName = output_file
     else:
         fileName = srt_file_path.split("/")
-        fileName = fileName[-1].split(".")
+        fileName = fileName[-1].rsplit(".", 1)
         fileName = fileName[0]+".vtt"
     with open(f"{fileName}", "w", encoding='utf-8') as vtt_file:
         vtt_file.write(vtt_contents)
@@ -83,7 +83,7 @@ def convert_vtt_to_srt(srt_file_path:str, output_file=None) -> None:
         fileName = output_file
     else:
         fileName = srt_file_path.split("/")
-        fileName = fileName[-1].split(".")
+        fileName = fileName[-1].rsplit(".", 1)
         fileName = fileName[0]+".srt"
     with open(f"{fileName}", "w", encoding='utf-8') as srt_file:
         srt_file.write(srt_contents)

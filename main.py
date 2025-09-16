@@ -389,24 +389,6 @@ class UI(QMainWindow):
                 self.validateFeedbackTextEdit.setHtml(temp_text)
 
     """Check Sequence"""
-    def clean_extra_white_spaces(self, srt_file:str) -> None:
-        """
-        Remove the extra whitespaces from the end of each line in SRT file
-
-            Parameters:
-                srt_file (str): path to the SRT file
-
-            Return:
-                None
-        """
-        lines = []
-        with open(srt_file, "r", encoding='utf-8') as f:
-            lines = f.readlines()
-            lines = [line.strip() for line in lines]
-        with open(srt_file, "w", encoding='utf-8') as f:
-            for line in lines:
-                f.write(f"{line}\n")
-
     def check_timecode_sequence(self):
         """
         Checks SRT file(s) for common errors:
@@ -452,7 +434,7 @@ class UI(QMainWindow):
             with open(file, "r", encoding='utf-8') as srt_file:
                 # Read the contents of the file
                 srt_contents = srt_file.read()
-                srt_contents_lines = srt_file.readlines()
+                srt_contents_lines = srt_contents.split("\n")
 
 
             # timestamp pattern
@@ -461,6 +443,7 @@ class UI(QMainWindow):
             srt_timecodes = re.findall(pattern, srt_contents)
 
             # Find errors in timecodes
+            # Errors within the same timecode
             for line in srt_timecodes:
                 if len(line.strip()) != 29:
                     block_format_error[f"{file}"].append(line)
@@ -472,6 +455,7 @@ class UI(QMainWindow):
                 except:
                     block_format_error[f"{file}"].append(line)
 
+            # Errors between two timecodes
             for i in range(len(srt_timecodes) - 1):
                 try:
                     _, current_block_end = hf.convert_timecode_to_millisec(srt_timecodes[i])
@@ -506,13 +490,13 @@ class UI(QMainWindow):
             for i in block_index_indexes:
                 if i == 0:
                     continue
-                if srt_contents_lines[i-1] != "\n":
+                if srt_contents_lines[i-1] != "\n" and srt_contents_lines[i-1] != '':
                     empty_row_errors[f"{file}"].append(f"Missing empty row at line {i}")
-                if srt_contents_lines[i-2] == "\n":
+                if srt_contents_lines[i-2] == "\n" or srt_contents_lines[i-2] == "":
                     empty_row_errors[f"{file}"].append(f"Extra row at line {i}")
-                if srt_contents_lines[i+1] == "\n":
+                if srt_contents_lines[i+1] == "\n" or srt_contents_lines[i+1] == "":
                     empty_row_errors[f"{file}"].append(f"Extra row at line {i+2}")
-                if srt_contents_lines[i+2] == "\n":
+                if srt_contents_lines[i+2] == "\n" or srt_contents_lines[i+2] == "":
                     empty_row_errors[f"{file}"].append(f"Extra row at line {i+3}")
 
         # count will be greater than 0 if there were error in the srt files
@@ -571,7 +555,7 @@ class UI(QMainWindow):
                     else:
                         temp_text = f"{temp_text}<font color='#039169'>Extra white spaces at Block Indices: {','.join(errors)}</font>"
                     self.processSrtFeedbackTextEdit.setHtml(temp_text)
-                    self.clean_extra_white_spaces(file)
+                    hf.clean_extra_white_spaces(file)
                     temp_text = self.processSrtFeedbackTextEdit.toHtml()
                     temp_text = f"{temp_text}<font color='green'>Cleaned white spaces from file: {file}</font>"
                     self.processSrtFeedbackTextEdit.setHtml(temp_text)
@@ -698,7 +682,7 @@ class UI(QMainWindow):
 
         for srt_file in srt_files:
             sort.sort(srt_file, edit_original_file=True)
-            self.clean_extra_white_spaces(srt_file)
+            hf.clean_extra_white_spaces(srt_file)
             correct_intersected_srt.correct_intersected_blocks(srt_file)
             try:
                 if os.path.isfile(fname):
