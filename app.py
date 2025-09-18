@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, url_for, send_file, stream_with_context, after_this_request
+from flask import Flask, render_template, request, redirect, flash, url_for, send_file
 from werkzeug.utils import secure_filename
 import os
 import difflib
@@ -54,7 +54,7 @@ def compare():
             file2_extension = file2_name.rsplit(".", 1)[-1]
             
             if file1_extension.lower() != file2_extension.lower():
-                flash('Both files must have the same extension', 'info')
+                flash('Both files must have the same extension', 'warning')
                 return redirect(request.url)
 
             file1_path = os.path.join(app.config['UPLOAD_FOLDER'], file1_name)
@@ -74,6 +74,13 @@ def compare():
                 with open(file2_path, "r", encoding="utf-8") as f:
                     lines2 = f.readlines()
                 diff_html = difflib.HtmlDiff().make_file(lines1, lines2)
+
+            else:
+                flash("Only .srt, .txt and .csv file formats are supported", "warning")
+                # Clean up uploaded files
+                os.remove(file1_path)
+                os.remove(file2_path)
+                return redirect(request.url)
 
             # Clean up uploaded files
             os.remove(file1_path)
@@ -101,7 +108,7 @@ def process_srt():
             srt_file_extension = srt_file_name.rsplit(".", 1)[-1]
 
             if srt_file_extension.lower() != "srt" and srt_file_extension.lower() != "vtt":
-                flash('The uploaded file type is not supported. Please upload .srt or .vtt files only', 'info')
+                flash('The uploaded file type is not supported. Please upload .srt or .vtt files only', 'warning')
                 return redirect(request.url)
             
             srt_file_path = os.path.join(app.config['UPLOAD_FOLDER'], srt_file_name)
@@ -118,7 +125,9 @@ def process_srt():
                         output_extension = "_sorted.srt"
                     
                     else:
-                        flash('This function only accepts SRT files', 'info')
+                        flash('Only SRT file format is accepted', 'warning')
+                        os.remove(srt_file_path)
+                        return redirect(request.url)
 
                 elif request.form['action'] == 'convert-srt-vtt':
                     app.logger.info("Convert SRT/VTT button pressed")
@@ -131,7 +140,9 @@ def process_srt():
                         output_extension = ".srt"  
 
                     else:
-                        flash('This function only accepts SRT or VTT files', 'info')
+                        flash('Only SRT/VTT file formats are accepted', 'warning')
+                        os.remove(srt_file_path)
+                        return redirect(request.url)
 
                 elif request.form['action'] == "clean-srt":
                     app.logger.info("Clean SRT button pressed")
@@ -140,7 +151,9 @@ def process_srt():
                         output_extension = ".txt" 
 
                     else:
-                        flash('This function only accepts SRT files', 'info')
+                        flash('Only SRT file format is accepted', 'warning')
+                        os.remove(srt_file_path)
+                        return redirect(request.url)
 
                 elif request.form['action'] == "check-srt-sequence":
                     app.logger.info("Check SRT sequence button pressed")
@@ -224,38 +237,39 @@ def process_srt():
                         if error_within_one_block or error_between_two_blocks or block_index_errors or white_space_in_block_index_error or empty_row_errors or block_format_error:
                             
                             if error_within_one_block:
-                                flash("Timing error within the same block")
+                                flash("Timing error within the same block", "header")
                                 for error in error_within_one_block:
-                                    flash(f"{error}", "info")
+                                    flash(f"{error}", "body")
 
                             if error_between_two_blocks:
-                                flash("Timing error between two blocks")
+                                flash("Timing error between two blocks", "header")
                                 for error in error_between_two_blocks:
-                                    flash(f"{error}", "info")
+                                    flash(f"{error}", "body")
+                                flash("Corrected intersection between timeblocks", "header")
                                 correct_intersected_srt.correct_intersected_blocks(srt_file_path)
-                                flash("Corrected intersection between timeblocks")
 
                             if block_index_errors:
                                 for error in block_index_errors:
-                                    flash(f"Block Index {error} is wrong or missing", "info")
+                                    flash(f"Block Index {error} is wrong or missing", "header")
 
                             if white_space_in_block_index_error:
                                 if len(white_space_in_block_index_error) == 1:
-                                    flash(f"Extra white space at Block Index {white_space_in_block_index_error[0]}</font>")
+                                    flash(f"Extra white space at Block Index {white_space_in_block_index_error[0]}", "header")
                                 else:
-                                    flash(f"Extra white spaces at Block Indices: {','.join(white_space_in_block_index_error)}", "info")
+                                    flash("Extra white spaces at Block Indices:", "header")
+                                    flash(f"{','.join(white_space_in_block_index_error)}", "body")
                                 hf.clean_extra_white_spaces(srt_file_path)
-                                flash("Cleaned white spaces from SRT file")
+                                flash("Cleaned white spaces from SRT file", "header")
 
                             if empty_row_errors:
-                                flash("Empty/Extra row error")
+                                flash("Empty/Extra row error", "header")
                                 for error in empty_row_errors:
-                                    flash(f"{error}", "info")
+                                    flash(f"{error}", "body")
 
                             if block_format_error:
-                                flash("Timecode format error")
+                                flash("Timecode format error", "header")
                                 for error in block_format_error:
-                                    flash(f"{error}", "info")
+                                    flash(f"{error}", "body")
 
                             if error_between_two_blocks or white_space_in_block_index_error:
                                 output_extension = ".srt"
@@ -264,12 +278,14 @@ def process_srt():
                                 return redirect(request.url)
 
                         else:
-                            flash("No errors were found", "info")
+                            flash("No errors were found", "success")
                             os.remove(srt_file_path)
                             return redirect(request.url)
                             
                     else:
-                        flash('This function only accepts SRT files', 'info')
+                        flash('Only SRT file format is accepted', 'warning')
+                        os.remove(srt_file_path)
+                        return redirect(request.url)
                     
                 elif request.form['action'] == "sync":
                     app.logger.info("Sync button pressed")
@@ -305,6 +321,11 @@ def process_srt():
                         sync_srt.sync(srt_file_path, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, srt_file_path)
                         app.logger.info("File was successfully synchronized")
                         output_extension = ".srt"
+
+                    else:
+                        flash('Only SRT file format is accepted', 'warning')
+                        os.remove(srt_file_path)
+                        return redirect(request.url)
 
                 
                 # This file is being created by other functions like (sort, convert between srt/vtt and clean)
@@ -349,7 +370,7 @@ def srt_prep():
                     srt_file_path = os.path.join(app.config['UPLOAD_FOLDER'], srt_file_name)
                     srt_file.save(srt_file_path)
 
-                    if srt_file_extension == "srt":
+                    if srt_file_extension.lower() == "srt":
                         hf.sub_srt_codes(srt_file_path, save_output_where_input_is_located=True)
                         prep_srt.srt_to_json(srt_file_path)
 
@@ -394,7 +415,9 @@ def srt_prep():
                         )
 
                     else:
-                        flash('This function only accepts SRT files', 'info')
+                        flash('Only SRT file format is accepted', 'warning')
+                        os.remove(srt_file_path)
+                        return redirect(request.url)
 
                 else:
 
@@ -432,36 +455,43 @@ def srt_prep():
                     text_file_path = os.path.join(app.config['UPLOAD_FOLDER'], text_file_name)
                     text_file.save(text_file_path)
 
-                    prep_srt.reconstruct_srt_from_json_and_txt(json_file_path, text_file_path)
+                    if json_file_extension.lower() == "json" and text_file_extension.lower() == "txt":
+                        prep_srt.reconstruct_srt_from_json_and_txt(json_file_path, text_file_path)
 
-                    reconstructed_file_path = text_file_path.rsplit(".", 1)[0]+"_new.srt"
-                    sync_srt.sync(reconstructed_file_path, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, reconstructed_file_path)
+                        reconstructed_file_path = text_file_path.rsplit(".", 1)[0]+"_new.srt"
+                        sync_srt.sync(reconstructed_file_path, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, reconstructed_file_path)
 
-                    with open(reconstructed_file_path, "rb") as f:
-                        file_bytes = io.BytesIO(f.read())
+                        with open(reconstructed_file_path, "rb") as f:
+                            file_bytes = io.BytesIO(f.read())
 
-                    try:
+                        try:
+                            os.remove(json_file_path)
+                        except Exception as e:
+                            app.logger.error(f"Error deleting json file {json_file_path}: {e}")
+
+                        try:
+                            os.remove(text_file_path)
+                        except Exception as e:
+                            app.logger.error(f"Error deleting text file {text_file_path}: {e}")
+
+                        try:
+                            os.remove(reconstructed_file_path)
+                        except Exception as e:
+                            app.logger.error(f"Error deleting reconstructed srt file {reconstructed_file_path}: {e}")
+
+                        # Send file for download
+                        return send_file(
+                            file_bytes,
+                            as_attachment=True,
+                            download_name=f'output.srt',
+                            mimetype='text/plain'
+                        )
+                    
+                    else:
+                        flash("The uploaded file formats are not correct please upload the json and txt files", "warning")
                         os.remove(json_file_path)
-                    except Exception as e:
-                        app.logger.error(f"Error deleting json file {json_file_path}: {e}")
-
-                    try:
                         os.remove(text_file_path)
-                    except Exception as e:
-                        app.logger.error(f"Error deleting text file {text_file_path}: {e}")
-
-                    try:
-                        os.remove(reconstructed_file_path)
-                    except Exception as e:
-                        app.logger.error(f"Error deleting reconstructed srt file {reconstructed_file_path}: {e}")
-
-                    # Send file for download
-                    return send_file(
-                        file_bytes,
-                        as_attachment=True,
-                        download_name=f'output.srt',
-                        mimetype='text/plain'
-                    )
+                        return redirect(request.url)
 
 
         except Exception as e:
