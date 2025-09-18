@@ -5,9 +5,21 @@
 
 {%block body %}
     <div class="container">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+
         <div class="header">
             <h1>SRT Prep/Reconstruct</h1>
-            <p class="subtitle">Prepare and reconstruct subtitle files</p>
+            <p class="subtitle">Prepare and reconstruct subtitle files for translation</p>
         </div>
         
         <div class="tabs-container">
@@ -19,23 +31,74 @@
         <div class="content">
             <div class="card">
                 <h3>SRT Preparation Tools</h3>
-                <p>Tools for preparing and reconstructing SRT files:</p>
-                <ul class="feature-list">
-                    <li>Reconstruct broken SRT files</li>
-                    <li>Prepare text for SRT conversion</li>
-                    <li>Batch process multiple files</li>
-                    <li>Validate SRT structure</li>
-                </ul>
-                <div class="file-upload">
-                    <h4>Upload File for Processing</h4>
-                    <input type="file" id="prepFile">
-                </div>
-                <button class="btn" style="margin-top: 20px;">Process File</button>
+                <p>Upload an SRT file and press the "Prep SRT" to generate the .txt and .json files.</p>
+                <form action="/srt_prep" method="POST" enctype="multipart/form-data">
+                    <div class="srt_prep-container">
+                        <div class="file-upload">
+                            <h4>SRT File</h4>
+                            <input type="file" id="srt-file" name="srt-file" required accept=".srt">
+                        </div>
+                    </div>
+                    <button type="submit" name="action" value="prep-srt">Prep SRT</button>
+                </form>
             </div>
-        </div>
-        
-        <div class="footer">
-            <p>© 2023 Text Processing Toolkit | Web Version of PyQt Application</p>
-        </div>
+            <h3>SRT Reconstruction</h3>
+            <p>Upload the translated .txt file and the generated .json file and press "Reconstruct and Sync SRT"</p>
+            <div class="card">
+                <form action="/srt_prep" method="POST" enctype="multipart/form-data">
+                    <div class="srt_reconstruct-container">
+                        <div class="file-upload">
+                            <h4>JSON File</h4>
+                            <input type="file" id="json-file" name="json-file" required accept=".json">
+                            <h4>TXT File</h4>
+                            <input type="file" id="text-file" name="text-file" required accept=".txt">
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <select name="sync-option" id="sync-option">
+                            <option value="Normal">Normal</option>
+                            <option value="Short">Short</option>
+                            <option value="Custom">Custom</option>
+                        </select>
+                        <div class="custom-fields" id="custom-fields" style="display:none;">
+                            <div class="input-group">
+                                <span class="input-label">Min</span>
+                                <input type="number" placeholder="Enter Min" id="min-input" name="min-input" disabled>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-label">Max</span>
+                                <input type="number" placeholder="Enter Max" id="max-input" name="max-input" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="checkbox">
+                        <input type="checkbox" id="split-at-punctuation" name="split-at-punctuation" value="split-at-punctuation">
+                        <label for="split-at-punctuation">Split at punctuation</label>
+                    </div>
+                    <button type="submit" name="action" value="reconstruct-srt">Reconstruct and Sync SRT</button>
+                </form>
+                <script>
+                document.getElementById("sync-option").addEventListener("change", function() {
+                    const customFields = document.getElementById("custom-fields");
+                    const minInput = document.getElementById("min-input");
+                    const maxInput = document.getElementById("max-input");
+
+                    if (this.value === "Custom") {
+                        customFields.style.display = "block";
+                        minInput.disabled = false;
+                        maxInput.disabled = false;
+                        minInput.required = true;
+                        maxInput.required = true;
+                    } else {
+                        customFields.style.display = "none";
+                        minInput.disabled = true;
+                        maxInput.disabled = true;
+                        minInput.required = false;
+                        maxInput.required = false;
+                    }
+                });
+                </script>
+            </div>
+        </div>       
     </div>
 {% endblock %}

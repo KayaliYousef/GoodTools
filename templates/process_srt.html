@@ -31,12 +31,13 @@
         <div class="content">
             <div class="card">
                 <h3>SRT Processing Tools</h3>
-                <p>Upload an SRT file to process it with various options:</p>
+                <p>Upload an SRT/VTT file to process it with various options:</p>
                 <ul class="feature-list">
-                    <li>Adjust timing offsets</li>
-                    <li>Merge multiple SRT files</li>
-                    <li>Split large SRT files</li>
-                    <li>Convert encoding formats</li>
+                    <li>Sort timing blocks</li>
+                    <li>Convert between SRT and VTT</li>
+                    <li>Convert SRT into Plain Text</li>
+                    <li>Validate SRT formating</li>
+                    <li>Synchronize SRT</li>
                 </ul>
                 <form action="/process_srt" method="POST" enctype="multipart/form-data">
                     <div class="process_srt-container">
@@ -56,23 +57,50 @@
                             <option value="Short">Short</option>
                             <option value="Custom">Custom</option>
                         </select>
-
-                        <div class="custom-fields" id="custom-fields">
+                        <div class="custom-fields" id="custom-fields" style="display:none;">
                             <div class="input-group">
                                 <span class="input-label">Min</span>
-                                <input type="number" placeholder="Enter Min" id="min-input">
+                                <input type="number" placeholder="Enter Min" id="min-input" name="min-input" disabled>
                             </div>
                             <div class="input-group">
                                 <span class="input-label">Max</span>
-                                <input type="number" placeholder="Enter Max" id="max-input">
+                                <input type="number" placeholder="Enter Max" id="max-input" name="max-input" disabled>
                             </div>
+                        </div>
+
+                        <div class="checkbox">
+                            <input type="checkbox" id="split-at-punctuation" name="split-at-punctuation" value="split-at-punctuation">
+                            <label for="split-at-punctuation">Split at punctuation</label>
                         </div>
 
                         <button type="submit" name="action" value="sync">Synchronize SRT</button>
                     </div>
                 </form>
+                <script>
+                document.getElementById("sync-option").addEventListener("change", function() {
+                    const customFields = document.getElementById("custom-fields");
+                    const minInput = document.getElementById("min-input");
+                    const maxInput = document.getElementById("max-input");
+
+                    if (this.value === "Custom") {
+                        customFields.style.display = "block";
+                        minInput.disabled = false;
+                        maxInput.disabled = false;
+                        minInput.required = true;
+                        maxInput.required = true;
+                    } else {
+                        customFields.style.display = "none";
+                        minInput.disabled = true;
+                        maxInput.disabled = true;
+                        minInput.required = false;
+                        maxInput.required = false;
+                    }
+                });
+                </script>
             </div>
         </div>
         
     </div>
+
+    
 {% endblock %}
