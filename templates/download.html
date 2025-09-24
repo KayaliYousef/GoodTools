@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 8px 4px;
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+        color: #fff;
+        background: #007BFF; /* Bootstrap-like blue */
+        border-radius: 6px;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    .btn:active {
+        background: #00408d;
+        transform: translateY(0);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background: #565e64;
+    }
+
+</style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <a href="{{ url_for('download_file') }}" class="btn">Download corrected file</a>
+        <a href="{{ url_for('process_srt') }}" class="btn btn-secondary">Return</a>
+    </div>
+{% endblock %}

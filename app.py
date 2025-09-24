@@ -42,6 +42,12 @@ def index():
 
 @app.route('/compare', methods=['GET', 'POST'])
 def compare():
+    try:
+        srt_file_path = os.path.join(UPLOAD_FOLDER, "corrected.srt")
+        os.remove(srt_file_path)
+    except:
+        pass
+    
     if request.method == "POST":
         file1 = request.files['file1']
         file2 = request.files['file2']
@@ -98,6 +104,12 @@ def compare():
 @app.route('/process_srt', methods=['GET', 'POST'])
 def process_srt():
 
+    try:
+        srt_file_path = os.path.join(UPLOAD_FOLDER, "corrected.srt")
+        os.remove(srt_file_path)
+    except:
+        pass
+
     if request.method == "POST":
         app.logger.info("POST request detected")
         srt_file = request.files['srt-file']
@@ -111,7 +123,7 @@ def process_srt():
                 flash('The uploaded file type is not supported. Please upload .srt or .vtt files only', 'warning')
                 return redirect(request.url)
             
-            srt_file_path = os.path.join(app.config['UPLOAD_FOLDER'], srt_file_name)
+            srt_file_path = os.path.join(app.config['UPLOAD_FOLDER'], srt_file_name).replace("\\", "/")
             app.logger.info("Created file path")
             srt_file.save(srt_file_path)
             app.logger.info("File was successfully uploaded")
@@ -272,7 +284,8 @@ def process_srt():
                                     flash(f"{error}", "body")
 
                             if error_between_two_blocks or white_space_in_block_index_error:
-                                output_extension = ".srt"
+                                os.rename(srt_file_path, os.path.join(srt_file_path.rsplit("/", 1)[0], "corrected.srt"))
+                                return redirect(url_for("download_page"))
                             else:
                                 os.remove(srt_file_path)
                                 return redirect(request.url)
@@ -330,9 +343,8 @@ def process_srt():
                 
                 # This file is being created by other functions like (sort, convert between srt/vtt and clean)
                 tempfile_path = srt_file_path.rsplit("/", 1)[-1].rsplit(".", 1)[0] + output_extension
-
                 # Read file into memory
-                with open(tempfile_path, "rb") as f:
+                with open(os.path.join(UPLOAD_FOLDER, tempfile_path), "rb") as f:
                     file_bytes = io.BytesIO(f.read())
 
                 os.remove(srt_file_path)
@@ -356,8 +368,34 @@ def process_srt():
         
     return render_template('process_srt.html')
 
+
+@app.route('/download')
+def download_page():
+    return render_template("download.html")
+
+@app.route("/download/file")
+def download_file():
+    # Read file into memory
+    srt_file_path = os.path.join(UPLOAD_FOLDER, "corrected.srt")
+    with open(srt_file_path, "rb") as f:
+        file_bytes = io.BytesIO(f.read())
+
+    os.remove(srt_file_path)
+
+    return send_file(
+        file_bytes,
+        as_attachment=True,
+        download_name="corrected.srt",
+        mimetype='text/plain'
+    )
+
 @app.route('/srt_prep', methods=['GET', 'POST'])
 def srt_prep():
+    try:
+        srt_file_path = os.path.join(UPLOAD_FOLDER, "corrected.srt")
+        os.remove(srt_file_path)
+    except:
+        pass
 
     if request.method == "POST":
         try:
@@ -374,8 +412,8 @@ def srt_prep():
                         hf.sub_srt_codes(srt_file_path, save_output_where_input_is_located=True)
                         prep_srt.srt_to_json(srt_file_path)
 
-                        text_file_path = srt_file_path.rsplit("/", 1)[-1].rsplit(".", 1)[0] + ".txt"
-                        json_file_path = srt_file_path.rsplit("/", 1)[-1].rsplit(".", 1)[0] + "_output.json"
+                        text_file_path = srt_file_path.rsplit(".", 1)[0] + ".txt"
+                        json_file_path = srt_file_path.rsplit(".", 1)[0] + "_output.json"
 
                         # Create an in-memory ZIP file
                         zip_buffer = io.BytesIO()
