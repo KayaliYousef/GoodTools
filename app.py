@@ -4,7 +4,6 @@ import os
 import difflib
 import secrets
 import helper_functions as hf
-import tempfile
 import sort
 import io
 import srt_vtt_converter
