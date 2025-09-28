@@ -1,0 +1,6 @@
+# Build the image (or overwrite the old one)
+docker build -t goodtools:latest .
+
+# tag and push the image to dockerhub
+docker tag goodtools:latest kayaliyousef/goodtools:latest
+docker push kayaliyousef/goodtools:latest

@@ -1,7 +1,7 @@
 services:
   web:
-    image: myflaskapp          # use the image you already built
-    container_name: flask_app  # optional, easier naming
+    image: kayaliyousef/goodtools:latest          # use the image you already built
+    container_name: good_tools  # optional, easier naming
     ports:
       - "8000:8000"            # maps host port 8000 → container port 8000
     restart: always            # auto restart if the container crashes
