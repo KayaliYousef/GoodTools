@@ -330,7 +330,7 @@ def process_srt():
                         app.logger.info("Whitespaces were successfully removed")
                         correct_intersected_srt.correct_intersected_blocks(srt_file_path)
                         app.logger.info("Intersected translation blocks were corrected successfully")
-                        sync_srt.sync(srt_file_path, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, srt_file_path)
+                        sync_srt.sync(srt_file_path, max_char_per_line, min_char_per_line, split_at_punctuation, punctuations, srt_file_path.rsplit("/", 1)[-1])
                         app.logger.info("File was successfully synchronized")
                         output_extension = ".srt"
 
@@ -343,7 +343,7 @@ def process_srt():
                 # This file is being created by other functions like (sort, convert between srt/vtt and clean)
                 tempfile_path = srt_file_path.rsplit("/", 1)[-1].rsplit(".", 1)[0] + output_extension
                 # Read file into memory
-                with open(os.path.join(UPLOAD_FOLDER, tempfile_path), "rb") as f:
+                with open(tempfile_path, "rb") as f:
                     file_bytes = io.BytesIO(f.read())
 
                 os.remove(srt_file_path)
